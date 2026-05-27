@@ -1,0 +1,15 @@
+@if (isAuthenticated()) {
+  <app-navbar />
+}
+
+<div class="notifications">
+  @for (n of notificationSvc.notifications(); track n.id) {
+    <div class="toast" [class]="n.type" (click)="notificationSvc.remove(n.id)">
+      {{ n.message }}
+    </div>
+  }
+</div>
+
+<main>
+  <router-outlet />
+</main>

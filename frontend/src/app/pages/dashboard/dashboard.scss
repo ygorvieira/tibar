@@ -1,0 +1,45 @@
+h1 {
+  margin-bottom: 0.5rem;
+  color: #1a1a2e;
+}
+
+.period {
+  color: #777;
+  margin-bottom: 1.5rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.card {
+  padding: 1.5rem;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+  h3 {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  &.income .value { color: #2e7d32; }
+  &.expense .value { color: #c62828; }
+  &.positive .value { color: #2e7d32; }
+  &.negative .value { color: #c62828; }
+}
+
+.loading {
+  color: #999;
+  text-align: center;
+  margin-top: 2rem;
+}

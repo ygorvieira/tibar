@@ -1,0 +1,63 @@
+<div class="header">
+  <h1>Categorias</h1>
+  <button class="btn-primary" (click)="openCreate()">+ Nova</button>
+</div>
+
+@if (showForm) {
+  <div class="form-card">
+    <h3>{{ editingId ? 'Editar' : 'Nova' }} Categoria</h3>
+    <form (ngSubmit)="save()">
+      <label>
+        Nome
+        <input type="text" [(ngModel)]="form.name" name="name" required />
+      </label>
+
+      <label>
+        Tipo
+        <select [(ngModel)]="form.type" name="type">
+          <option value="Income">Receita</option>
+          <option value="Expense">Despesa</option>
+        </select>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Salvar</button>
+        <button type="button" class="btn-secondary" (click)="cancelForm()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (loading()) {
+  <p class="loading">Carregando...</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Tipo</th>
+        <th>Criada</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (c of categories; track c.id) {
+        <tr>
+          <td>{{ c.name }}</td>
+          <td>
+            <span class="badge" [class.income]="c.type === 'Income'" [class.expense]="c.type === 'Expense'">
+              {{ c.type === 'Income' ? 'Receita' : 'Despesa' }}
+            </span>
+          </td>
+          <td>{{ c.createdAt | date }}</td>
+          <td class="actions">
+            <button class="btn-sm" (click)="openEdit(c)">Editar</button>
+            <button class="btn-sm btn-danger" (click)="delete(c.id)">Excluir</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="4" class="empty">Nenhuma categoria encontrada.</td></tr>
+      }
+    </tbody>
+  </table>
+}

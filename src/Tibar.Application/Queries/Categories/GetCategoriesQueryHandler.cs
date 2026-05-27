@@ -20,14 +20,12 @@ public class GetCategoriesQueryHandler
     {
         var categories = await _context.Categories
             .Where(c => c.UserId == request.UserId)
-            .Select(c => new DTOs.CategoryDto(
-                c.Id,
-                c.Name,
-                c.Type.ToString(),
-                c.CreatedAt))
             .OrderBy(c => c.Name)
             .ToListAsync(cancellationToken);
 
-        return Result.Success<IEnumerable<DTOs.CategoryDto>>(categories);
+        var dtos = categories.Select(c => new DTOs.CategoryDto(
+            c.Id, c.Name, c.Type.ToString(), c.CreatedAt));
+
+        return Result.Success<IEnumerable<DTOs.CategoryDto>>(dtos);
     }
 }

@@ -1,0 +1,40 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: #f5f5f5;
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.notifications {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toast {
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.2s ease;
+
+  &.success { background: #2e7d32; }
+  &.error { background: #c62828; }
+  &.info { background: #1565c0; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

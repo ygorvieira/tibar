@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Tibar.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4161f805b81761ea362db3c74cd47e1570529922")]
 [assembly: System.Reflection.AssemblyProductAttribute("Tibar.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Tibar.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

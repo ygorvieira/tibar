@@ -1,0 +1,25 @@
+<div class="auth-page">
+  <h1>Entrar</h1>
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  <form (ngSubmit)="submit()">
+    <label>
+      E-mail
+      <input type="email" name="email" [(ngModel)]="model.email" required />
+    </label>
+
+    <label>
+      Senha
+      <input type="password" name="password" [(ngModel)]="model.password" required />
+    </label>
+
+    <button type="submit">Entrar</button>
+  </form>
+
+  <p class="link">
+    Não tem conta? <a routerLink="/register">Cadastre-se</a>
+  </p>
+</div>

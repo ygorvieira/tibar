@@ -1,6 +1,11 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Tibar.Application/Tibar.Application.csproj" />
     <Project Path="src/Tibar.Domain/Tibar.Domain.csproj" />
+    <Project Path="src/Tibar.Application/Tibar.Application.csproj" />
+    <Project Path="src/Tibar.Infrastructure/Tibar.Infrastructure.csproj" />
+    <Project Path="src/Tibar.API/Tibar.API.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Tibar.UnitTests/Tibar.UnitTests.csproj" />
   </Folder>
 </Solution>

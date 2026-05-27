@@ -22,22 +22,25 @@ public class GetTransactionsByPeriodQueryHandler
             .Where(t => t.UserId == request.UserId
                 && t.Date >= request.StartDate
                 && t.Date <= request.EndDate)
-            .Join(_context.Categories,
-                t => t.CategoryId,
-                c => c.Id,
-                (t, c) => new DTOs.TransactionDto(
-                    t.Id,
-                    t.Description,
-                    t.Amount.Amount,
-                    t.Amount.Currency,
-                    t.Type.ToString(),
-                    t.CategoryId,
-                    c.Name,
-                    t.Date,
-                    t.CreatedAt))
             .OrderByDescending(t => t.Date)
             .ToListAsync(cancellationToken);
 
-        return Result.Success<IEnumerable<DTOs.TransactionDto>>(transactions);
+        var categoryIds = transactions.Select(t => t.CategoryId).Distinct();
+        var categories = await _context.Categories
+            .Where(c => categoryIds.Contains(c.Id))
+            .ToDictionaryAsync(c => c.Id, c => c.Name, cancellationToken);
+
+        var dtos = transactions.Select(t => new DTOs.TransactionDto(
+            t.Id,
+            t.Description,
+            t.Amount.Amount,
+            t.Amount.Currency,
+            t.Type.ToString(),
+            t.CategoryId,
+            categories.GetValueOrDefault(t.CategoryId, ""),
+            t.Date,
+            t.CreatedAt));
+
+        return Result.Success<IEnumerable<DTOs.TransactionDto>>(dtos);
     }
 }

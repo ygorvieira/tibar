@@ -1,0 +1,12 @@
+<nav>
+  <a class="brand" routerLink="/">Tibar</a>
+  <div class="links">
+    <a routerLink="/dashboard" routerLinkActive="active">Painel</a>
+    <a routerLink="/transactions" routerLinkActive="active">Transações</a>
+    <a routerLink="/categories" routerLinkActive="active">Categorias</a>
+  </div>
+  <div class="user">
+    <span>{{ user()?.name }}</span>
+    <button (click)="logout()">Sair</button>
+  </div>
+</nav>

@@ -1,0 +1,24 @@
+<h1>Painel</h1>
+
+<p class="period">{{ startDate | date }} — {{ endDate | date }}</p>
+
+@if (loading()) {
+  <p class="loading">Carregando...</p>
+} @else if (balance) {
+  <div class="cards">
+    <div class="card income">
+      <h3>Receitas</h3>
+      <span class="value">{{ balance.totalIncome | currency: balance.currency }}</span>
+    </div>
+
+    <div class="card expense">
+      <h3>Despesas</h3>
+      <span class="value">{{ balance.totalExpense | currency: balance.currency }}</span>
+    </div>
+
+    <div class="card balance" [class.positive]="balance.balance >= 0" [class.negative]="balance.balance < 0">
+      <h3>Saldo</h3>
+      <span class="value">{{ balance.balance | currency: balance.currency }}</span>
+    </div>
+  </div>
+}

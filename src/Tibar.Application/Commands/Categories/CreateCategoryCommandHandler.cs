@@ -6,14 +6,9 @@ using Tibar.Domain.Enums;
 
 namespace Tibar.Application.Commands.Categories;
 
-public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, Result<DTOs.CategoryDto>>
+public class CreateCategoryCommandHandler(IApplicationDbContext context) : IRequestHandler<CreateCategoryCommand, Result<DTOs.CategoryDto>>
 {
-    private readonly IApplicationDbContext _context;
-
-    public CreateCategoryCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<DTOs.CategoryDto>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
     {
