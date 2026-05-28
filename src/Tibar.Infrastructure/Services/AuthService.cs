@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Tibar.Application.DTOs.Auth;
@@ -21,27 +22,18 @@ public class JwtSettings
     public int ExpirationInHours { get; set; } = 8;
 }
 
-public class AuthService : IAuthService
+public class AuthService(
+    UserManager<AppUser> userManager,
+    IApplicationDbContext context,
+    IOptions<JwtSettings> jwtSettings,
+    ILogger<AuthService> logger) : IAuthService
 {
-    private readonly UserManager<AppUser> _userManager;
-    private readonly IApplicationDbContext _context;
-    private readonly JwtSettings _jwtSettings;
-
-    public AuthService(
-        UserManager<AppUser> userManager,
-        IApplicationDbContext context,
-        IOptions<JwtSettings> jwtSettings)
-    {
-        _userManager = userManager;
-        _context = context;
-        _jwtSettings = jwtSettings.Value;
-    }
 
     public async Task<TokenResponse> RegisterAsync(string name, string email, string password, CancellationToken cancellationToken)
     {
-        var existingUser = await _userManager.FindByEmailAsync(email);
+        var existingUser = await userManager.FindByEmailAsync(email);
         if (existingUser is not null)
-            throw new DomainException("Email already registered.");
+            throw new DomainException("Email already registered.", 409);
 
         var appUser = new AppUser
         {
@@ -50,16 +42,17 @@ public class AuthService : IAuthService
             Name = name
         };
 
-        var identityResult = await _userManager.CreateAsync(appUser, password);
+        var identityResult = await userManager.CreateAsync(appUser, password);
         if (!identityResult.Succeeded)
         {
-            var errors = string.Join("; ", identityResult.Errors.Select(e => e.Description));
-            throw new DomainException(errors);
+            logger.LogWarning("Registration failed: {Errors}",
+                string.Join("; ", identityResult.Errors.Select(e => e.Description)));
+            throw new DomainException("Registration failed. Please check your input.");
         }
 
         var domainUser = new User(name, email);
-        _context.Users.Add(domainUser);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.Users.Add(domainUser);
+        await context.SaveChangesAsync(cancellationToken);
 
         var (token, expiresAt) = GenerateJwtToken(domainUser.Id, email, name);
 
@@ -68,11 +61,22 @@ public class AuthService : IAuthService
 
     public async Task<TokenResponse> LoginAsync(string email, string password, CancellationToken cancellationToken)
     {
-        var appUser = await _userManager.FindByEmailAsync(email);
-        if (appUser is null || !await _userManager.CheckPasswordAsync(appUser, password))
+        var appUser = await userManager.FindByEmailAsync(email);
+        if (appUser is null)
             throw new DomainException("Invalid email or password.");
 
-        var domainUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+        if (await userManager.IsLockedOutAsync(appUser))
+            throw new DomainException("Account temporarily locked. Try again later.", 429);
+
+        if (!await userManager.CheckPasswordAsync(appUser, password))
+        {
+            await userManager.AccessFailedAsync(appUser);
+            throw new DomainException("Invalid email or password.");
+        }
+
+        await userManager.ResetAccessFailedCountAsync(appUser);
+
+        var domainUser = await context.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
         var userId = domainUser?.Id ?? appUser.Id;
 
         var (token, expiresAt) = GenerateJwtToken(userId, email, appUser.Name);
@@ -83,8 +87,8 @@ public class AuthService : IAuthService
     private (string token, DateTime expiresAt) GenerateJwtToken(Guid userId, string email, string name)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_jwtSettings.Key);
-        var expiresAt = DateTime.UtcNow.AddHours(_jwtSettings.ExpirationInHours);
+        var key = Encoding.UTF8.GetBytes(jwtSettings.Value.Key);
+        var expiresAt = DateTime.UtcNow.AddHours(jwtSettings.Value.ExpirationInHours);
 
         var claims = new List<Claim>
         {
@@ -97,8 +101,8 @@ public class AuthService : IAuthService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = expiresAt,
-            Issuer = _jwtSettings.Issuer,
-            Audience = _jwtSettings.Audience,
+            Issuer = jwtSettings.Value.Issuer,
+            Audience = jwtSettings.Value.Audience,
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature)

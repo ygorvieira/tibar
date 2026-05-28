@@ -1,6 +1,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Tibar.API.Middleware;
@@ -19,7 +21,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var jwtSection = builder.Configuration.GetSection("Jwt");
-        var key = Encoding.ASCII.GetBytes(jwtSection["Key"]!);
+        var key = Encoding.UTF8.GetBytes(jwtSection["Key"]!);
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -33,9 +35,41 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
-builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("Auth", cfg =>
+    {
+        cfg.PermitLimit = 10;
+        cfg.Window = TimeSpan.FromMinutes(1);
+        cfg.QueueLimit = 0;
+    });
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
+builder.Services.AddHealthChecks();
+
+builder.Services.AddControllers(options =>
+{
+    options.MaxModelValidationErrors = 5;
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -63,13 +97,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseMiddleware<ExceptionMiddleware>();
+else
+{
+    app.UseHsts();
+}
 
 app.UseHttpsRedirection();
+app.UseCors("Frontend");
+app.UseMiddleware<ExceptionMiddleware>();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 _ = Task.Run(async () =>
@@ -80,7 +120,12 @@ _ = Task.Run(async () =>
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        await DbInitializer.InitializeAsync(context, userManager, logger);
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+        var adminEmail = config["AdminSettings:Email"] ?? "admin@tibar.com";
+        var adminPassword = config["AdminSettings:Password"] ?? "Admin@123";
+
+        await DbInitializer.InitializeAsync(context, userManager, logger, adminEmail, adminPassword);
     }
     catch (Exception ex)
     {

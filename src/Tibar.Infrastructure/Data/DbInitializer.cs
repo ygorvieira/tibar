@@ -9,41 +9,48 @@ namespace Tibar.Infrastructure.Data;
 
 public static class DbInitializer
 {
-    private const string AdminEmail = "admin@tibar.com";
-
-    public static async Task InitializeAsync(AppDbContext context, UserManager<AppUser> userManager, ILogger logger)
+    public static async Task InitializeAsync(
+        AppDbContext context,
+        UserManager<AppUser> userManager,
+        ILogger logger,
+        string adminEmail = "admin@tibar.com",
+        string adminPassword = "Admin@123")
     {
         await context.Database.MigrateAsync();
 
-        var userId = await EnsureAdminUserAsync(context, userManager);
+        var userId = await EnsureAdminUserAsync(context, userManager, adminEmail, adminPassword);
         if (userId.HasValue)
             await EnsureCategoriesAsync(context, userId.Value, logger);
     }
 
-    private static async Task<Guid?> EnsureAdminUserAsync(AppDbContext context, UserManager<AppUser> userManager)
+    private static async Task<Guid?> EnsureAdminUserAsync(
+        AppDbContext context,
+        UserManager<AppUser> userManager,
+        string adminEmail,
+        string adminPassword)
     {
-        var appUser = await userManager.FindByEmailAsync(AdminEmail);
+        var appUser = await userManager.FindByEmailAsync(adminEmail);
         if (appUser == null)
         {
             appUser = new AppUser
             {
                 UserName = "admin",
-                Email = AdminEmail,
+                Email = adminEmail,
                 Name = "Admin",
                 EmailConfirmed = true
             };
 
-            var result = await userManager.CreateAsync(appUser, "Admin123");
+            var result = await userManager.CreateAsync(appUser, adminPassword);
             if (!result.Succeeded)
                 return null;
         }
 
-        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == AdminEmail);
+        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == adminEmail);
         if (existingUser != null)
             return existingUser.Id;
 
         var userName = appUser.UserName ?? "admin";
-        var user = new User(userName, AdminEmail);
+        var user = new User(userName, adminEmail);
         context.Users.Add(user);
         await context.SaveChangesAsync();
         return user.Id;

@@ -1,20 +1,20 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tibar.Application.Commands.Auth;
+using Microsoft.AspNetCore.RateLimiting;
+using Tibar.Application.Commands.Auth.Login;
+using Tibar.Application.Commands.Auth.Register;
 using Tibar.Application.DTOs.Auth;
 
 namespace Tibar.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+[AllowAnonymous]
+[EnableRateLimiting("Auth")]
+public class AuthController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public AuthController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    private readonly IMediator _mediator = mediator;
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)

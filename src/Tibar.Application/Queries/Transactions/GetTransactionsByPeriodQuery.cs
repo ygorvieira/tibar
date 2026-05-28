@@ -7,4 +7,6 @@ namespace Tibar.Application.Queries.Transactions;
 public record GetTransactionsByPeriodQuery(
     Guid UserId,
     DateOnly StartDate,
-    DateOnly EndDate) : IRequest<Result<IEnumerable<TransactionDto>>>;
+    DateOnly EndDate,
+    int Page = 1,
+    int PageSize = 50) : IRequest<Result<PagedResult<TransactionDto>>>;

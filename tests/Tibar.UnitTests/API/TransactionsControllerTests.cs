@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Tibar.API.Controllers;
-using Tibar.Application.Commands.Transactions;
+using Tibar.Application.Commands.Transactions.Create;
+using Tibar.Application.Commands.Transactions.Delete;
+using Tibar.Application.Commands.Transactions.Update;
 using Tibar.Application.Common;
 using Tibar.Application.DTOs;
 using Tibar.Application.Queries.Transactions;
@@ -39,15 +41,17 @@ public class TransactionsControllerTests
                 new DateOnly(2026, 5, 27), DateTime.UtcNow)
         };
 
+        var pagedResult = new PagedResult<TransactionDto>(transactions, transactions.Count, 1, 50);
+
         _mediatorMock.Setup(m => m.Send(
                 It.IsAny<GetTransactionsByPeriodQuery>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success<IEnumerable<TransactionDto>>(transactions));
+            .ReturnsAsync(Result.Success(pagedResult));
 
-        var result = await _controller.GetTransactions(new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31));
+        var result = await _controller.GetTransactions(new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31), 1, 50);
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(transactions, ok.Value);
+        Assert.Equal(pagedResult, ok.Value);
     }
 
     [Fact]

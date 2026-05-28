@@ -3,20 +3,14 @@ using Tibar.Application.Common;
 using Tibar.Application.Interfaces;
 using Tibar.Domain.Enums;
 
-namespace Tibar.Application.Commands.Categories;
+namespace Tibar.Application.Commands.Categories.Update;
 
-public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, Result<DTOs.CategoryDto>>
+public class UpdateCategoryCommandHandler(
+    IApplicationDbContext context) : IRequestHandler<UpdateCategoryCommand, Result<DTOs.CategoryDto>>
 {
-    private readonly IApplicationDbContext _context;
-
-    public UpdateCategoryCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<Result<DTOs.CategoryDto>> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
     {
-        var category = await _context.Categories
+        var category = await context.Categories
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
         if (category is null || category.UserId != request.UserId)
@@ -28,7 +22,7 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
 
         category.Update(request.Name, typeResult.Data!);
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success(new DTOs.CategoryDto(
             category.Id,

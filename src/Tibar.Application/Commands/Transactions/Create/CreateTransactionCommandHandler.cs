@@ -6,27 +6,21 @@ using Tibar.Domain.Enums;
 using Tibar.Domain.Exceptions;
 using Tibar.Domain.ValueObjects;
 
-namespace Tibar.Application.Commands.Transactions;
+namespace Tibar.Application.Commands.Transactions.Create;
 
-public class CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, Result<DTOs.TransactionDto>>
+public class CreateTransactionCommandHandler(
+    IApplicationDbContext context) : IRequestHandler<CreateTransactionCommand, Result<DTOs.TransactionDto>>
 {
-    private readonly IApplicationDbContext _context;
-
-    public CreateTransactionCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<Result<DTOs.TransactionDto>> Handle(CreateTransactionCommand request, CancellationToken cancellationToken)
     {
         var typeResult = ParseType(request.Type);
         if (!typeResult.IsValid)
             return Result.Failure<DTOs.TransactionDto>(typeResult.Errors);
 
-        var category = await _context.Categories
+        var category = await context.Categories
             .FindAsync(new object[] { request.CategoryId }, cancellationToken);
 
-        if (category is null)
+        if (category is null || category.UserId != request.UserId)
             return Result.Failure<DTOs.TransactionDto>("Category not found.");
 
         var amountResult = CreateAmount(request.Amount);
@@ -41,8 +35,8 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
             request.UserId,
             request.Date);
 
-        _context.Transactions.Add(transaction);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.Transactions.Add(transaction);
+        await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success(MapToDto(transaction, category.Name));
     }

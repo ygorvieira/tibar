@@ -3,16 +3,10 @@ using Tibar.Domain.Exceptions;
 
 namespace Tibar.API.Middleware;
 
-public class ExceptionMiddleware
+public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionMiddleware> _logger;
-
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+    private readonly RequestDelegate _next = next;
+    private readonly ILogger<ExceptionMiddleware> _logger = logger;
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -24,7 +18,7 @@ public class ExceptionMiddleware
         {
             _logger.LogWarning(ex, "Domain exception: {Message}", ex.Message);
 
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            context.Response.StatusCode = ex.StatusCode;
             context.Response.ContentType = "application/json";
 
             var response = new { errors = new[] { ex.Message } };

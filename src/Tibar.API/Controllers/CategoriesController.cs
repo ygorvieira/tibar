@@ -2,7 +2,9 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tibar.Application.Commands.Categories;
+using Tibar.Application.Commands.Categories.Create;
+using Tibar.Application.Commands.Categories.Delete;
+using Tibar.Application.Commands.Categories.Update;
 using Tibar.Application.Queries.Categories;
 
 namespace Tibar.API.Controllers;
@@ -10,14 +12,9 @@ namespace Tibar.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class CategoriesController : ControllerBase
+public class CategoriesController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public CategoriesController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    private readonly IMediator _mediator = mediator;
 
     private Guid GetUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

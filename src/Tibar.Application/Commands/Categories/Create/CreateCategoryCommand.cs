@@ -2,10 +2,9 @@ using MediatR;
 using Tibar.Application.Common;
 using Tibar.Application.DTOs;
 
-namespace Tibar.Application.Commands.Categories;
+namespace Tibar.Application.Commands.Categories.Create;
 
-public record UpdateCategoryCommand(
-    Guid Id,
+public record CreateCategoryCommand(
     string Name,
     string Type,
     Guid UserId) : IRequest<Result<CategoryDto>>;

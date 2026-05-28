@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Tibar.Application.Commands.Auth;
+namespace Tibar.Application.Commands.Auth.Login;
 
 public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 {

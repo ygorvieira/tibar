@@ -2,7 +2,9 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tibar.Application.Commands.Transactions;
+using Tibar.Application.Commands.Transactions.Create;
+using Tibar.Application.Commands.Transactions.Delete;
+using Tibar.Application.Commands.Transactions.Update;
 using Tibar.Application.Queries.Transactions;
 
 namespace Tibar.API.Controllers;
@@ -10,14 +12,9 @@ namespace Tibar.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class TransactionsController : ControllerBase
+public class TransactionsController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public TransactionsController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    private readonly IMediator _mediator = mediator;
 
     private Guid GetUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -25,11 +22,13 @@ public class TransactionsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetTransactions(
         [FromQuery] DateOnly startDate,
-        [FromQuery] DateOnly endDate)
+        [FromQuery] DateOnly endDate,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
         var userId = GetUserId();
         var result = await _mediator.Send(
-            new GetTransactionsByPeriodQuery(userId, startDate, endDate));
+            new GetTransactionsByPeriodQuery(userId, startDate, endDate, page, pageSize));
 
         if (!result.IsValid)
             return BadRequest(new { errors = result.Errors });

@@ -9,6 +9,7 @@ public class Transaction : BaseEntity
     public Money Amount { get; private set; } = null!;
     public TransactionType Type { get; private set; }
     public Guid CategoryId { get; private set; }
+    public Category Category { get; private set; } = null!;
     public Guid UserId { get; private set; }
     public DateOnly Date { get; private set; }
 

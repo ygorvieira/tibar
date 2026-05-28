@@ -4,7 +4,7 @@ using Tibar.Application.Interfaces;
 using Tibar.Domain.Entities;
 using Tibar.Domain.Enums;
 
-namespace Tibar.Application.Commands.Categories;
+namespace Tibar.Application.Commands.Categories.Create;
 
 public class CreateCategoryCommandHandler(IApplicationDbContext context) : IRequestHandler<CreateCategoryCommand, Result<DTOs.CategoryDto>>
 {

@@ -4,29 +4,23 @@ using Tibar.Application.Interfaces;
 using Tibar.Domain.Exceptions;
 using Tibar.Domain.ValueObjects;
 
-namespace Tibar.Application.Commands.Transactions;
+namespace Tibar.Application.Commands.Transactions.Update;
 
-public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransactionCommand, Result<DTOs.TransactionDto>>
+public class UpdateTransactionCommandHandler(
+    IApplicationDbContext context) : IRequestHandler<UpdateTransactionCommand, Result<DTOs.TransactionDto>>
 {
-    private readonly IApplicationDbContext _context;
-
-    public UpdateTransactionCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<Result<DTOs.TransactionDto>> Handle(UpdateTransactionCommand request, CancellationToken cancellationToken)
     {
-        var transaction = await _context.Transactions
+        var transaction = await context.Transactions
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
         if (transaction is null || transaction.UserId != request.UserId)
             return Result.Failure<DTOs.TransactionDto>("Transaction not found.");
 
-        var category = await _context.Categories
+        var category = await context.Categories
             .FindAsync(new object[] { request.CategoryId }, cancellationToken);
 
-        if (category is null)
+        if (category is null || category.UserId != request.UserId)
             return Result.Failure<DTOs.TransactionDto>("Category not found.");
 
         Money amount;
@@ -44,7 +38,7 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
         transaction.UpdateCategory(request.CategoryId);
         transaction.UpdateDate(request.Date);
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success(new DTOs.TransactionDto(
             transaction.Id,

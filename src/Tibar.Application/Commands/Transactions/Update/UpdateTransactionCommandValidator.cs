@@ -1,10 +1,10 @@
 using FluentValidation;
 
-namespace Tibar.Application.Commands.Transactions;
+namespace Tibar.Application.Commands.Transactions.Update;
 
-public class CreateTransactionCommandValidator : AbstractValidator<CreateTransactionCommand>
+public class UpdateTransactionCommandValidator : AbstractValidator<UpdateTransactionCommand>
 {
-    public CreateTransactionCommandValidator()
+    public UpdateTransactionCommandValidator()
     {
         RuleFor(x => x.Description)
             .NotEmpty().WithMessage("Description is required.")
@@ -12,11 +12,6 @@ public class CreateTransactionCommandValidator : AbstractValidator<CreateTransac
 
         RuleFor(x => x.Amount)
             .GreaterThan(0).WithMessage("Amount must be greater than zero.");
-
-        RuleFor(x => x.Type)
-            .NotEmpty().WithMessage("Type is required.")
-            .Must(t => t.ToLower() is "income" or "expense")
-            .WithMessage("Type must be 'income' or 'expense'.");
 
         RuleFor(x => x.CategoryId)
             .NotEmpty().WithMessage("Category is required.");

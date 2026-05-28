@@ -2,7 +2,7 @@ using MediatR;
 using Tibar.Application.Common;
 using Tibar.Application.DTOs;
 
-namespace Tibar.Application.Commands.Transactions;
+namespace Tibar.Application.Commands.Transactions.Update;
 
 public record UpdateTransactionCommand(
     Guid Id,

@@ -1,6 +1,6 @@
 using MediatR;
 using Moq;
-using Tibar.Application.Commands.Transactions;
+using Tibar.Application.Commands.Transactions.Create;
 using Tibar.Application.Common;
 using Tibar.Application.Interfaces;
 using Tibar.Domain.Entities;

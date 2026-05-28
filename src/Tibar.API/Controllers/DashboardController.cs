@@ -9,14 +9,9 @@ namespace Tibar.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class DashboardController : ControllerBase
+public class DashboardController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public DashboardController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    private readonly IMediator _mediator = mediator;
 
     private Guid GetUserId() =>
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

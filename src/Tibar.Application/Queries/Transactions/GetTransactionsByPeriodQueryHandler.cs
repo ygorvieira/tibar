@@ -5,42 +5,38 @@ using Tibar.Application.Interfaces;
 
 namespace Tibar.Application.Queries.Transactions;
 
-public class GetTransactionsByPeriodQueryHandler
-    : IRequestHandler<GetTransactionsByPeriodQuery, Result<IEnumerable<DTOs.TransactionDto>>>
+public class GetTransactionsByPeriodQueryHandler(
+    IApplicationDbContext context)
+    : IRequestHandler<GetTransactionsByPeriodQuery, Result<PagedResult<DTOs.TransactionDto>>>
 {
-    private readonly IApplicationDbContext _context;
-
-    public GetTransactionsByPeriodQueryHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<Result<IEnumerable<DTOs.TransactionDto>>> Handle(
+    public async Task<Result<PagedResult<DTOs.TransactionDto>>> Handle(
         GetTransactionsByPeriodQuery request, CancellationToken cancellationToken)
     {
-        var transactions = await _context.Transactions
+        var query = context.Transactions
             .Where(t => t.UserId == request.UserId
                 && t.Date >= request.StartDate
-                && t.Date <= request.EndDate)
+                && t.Date <= request.EndDate);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var dtos = await query
             .OrderByDescending(t => t.Date)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .Select(t => new DTOs.TransactionDto(
+                t.Id,
+                t.Description,
+                t.Amount.Amount,
+                t.Amount.Currency,
+                t.Type.ToString(),
+                t.CategoryId,
+                t.Category.Name,
+                t.Date,
+                t.CreatedAt))
             .ToListAsync(cancellationToken);
 
-        var categoryIds = transactions.Select(t => t.CategoryId).Distinct();
-        var categories = await _context.Categories
-            .Where(c => categoryIds.Contains(c.Id))
-            .ToDictionaryAsync(c => c.Id, c => c.Name, cancellationToken);
+        var result = new PagedResult<DTOs.TransactionDto>(dtos, totalCount, request.Page, request.PageSize);
 
-        var dtos = transactions.Select(t => new DTOs.TransactionDto(
-            t.Id,
-            t.Description,
-            t.Amount.Amount,
-            t.Amount.Currency,
-            t.Type.ToString(),
-            t.CategoryId,
-            categories.GetValueOrDefault(t.CategoryId, ""),
-            t.Date,
-            t.CreatedAt));
-
-        return Result.Success<IEnumerable<DTOs.TransactionDto>>(dtos);
+        return Result.Success(result);
     }
 }

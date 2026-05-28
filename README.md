@@ -137,7 +137,7 @@ Serviços:
 | PostgreSQL | localhost:5432 |
 
 Na primeira execução, o seed cria automaticamente:
-- **Admin**: `admin@tibar.com` / `Admin123`
+- **Admin**: `admin@tibar.com` / `Admin@123`
 - **12 categorias padrão**: Salário, Freelance, Investimentos, Outros, Alimentação, Transporte, Moradia, Lazer, Saúde, Educação, Assinaturas, Compras
 
 ## Status
