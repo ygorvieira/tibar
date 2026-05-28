@@ -24,7 +24,9 @@ export class Login {
       error: (err) => {
         const body = err.error;
         if (body?.errors) {
-          this.error = Array.isArray(body.errors) ? body.errors[0] : Object.values(body.errors)[0]?.[0];
+          this.error = Array.isArray(body.errors)
+            ? body.errors[0]
+            : (Object.values(body.errors as Record<string, string[]>)[0]?.[0] ?? 'E-mail ou senha inválidos.');
         } else {
           this.error = 'E-mail ou senha inválidos.';
         }
