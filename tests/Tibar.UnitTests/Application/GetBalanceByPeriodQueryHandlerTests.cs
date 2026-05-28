@@ -103,6 +103,7 @@ public class GetBalanceByPeriodQueryHandlerTests
         var result = await _handler.Handle(query, CancellationToken.None);
 
         Assert.True(result.IsValid);
+        Assert.NotNull(result.Data);
         Assert.Equal(0, result.Data.TotalIncome);
         Assert.Equal(0, result.Data.TotalExpense);
         Assert.Equal(0, result.Data.Balance);
@@ -129,6 +130,8 @@ public class GetBalanceByPeriodQueryHandlerTests
         var query = new GetBalanceByPeriodQuery(userA, start, end);
         var result = await _handler.Handle(query, CancellationToken.None);
 
+        Assert.True(result.IsValid);
+        Assert.NotNull(result.Data);
         Assert.Equal(5000, result.Data.TotalIncome);
     }
 
@@ -151,6 +154,8 @@ public class GetBalanceByPeriodQueryHandlerTests
         var query = new GetBalanceByPeriodQuery(userId, start, end);
         var result = await _handler.Handle(query, CancellationToken.None);
 
+        Assert.True(result.IsValid);
+        Assert.NotNull(result.Data);
         Assert.Equal(100, result.Data.TotalIncome);
     }
 }
