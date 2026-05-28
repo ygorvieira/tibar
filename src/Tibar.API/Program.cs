@@ -112,26 +112,24 @@ app.UseAuthorization();
 app.MapHealthChecks("/health");
 app.MapControllers();
 
-_ = Task.Run(async () =>
+try
 {
-    try
-    {
-        using var scope = app.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
-        var adminEmail = config["AdminSettings:Email"] ?? "admin@tibar.com";
-        var adminPassword = config["AdminSettings:Password"] ?? "Admin@123";
+    var adminEmail = config["AdminSettings:Email"] ?? "admin@tibar.com";
+    var adminPassword = config["AdminSettings:Password"] ?? "Admin@123";
 
-        await DbInitializer.InitializeAsync(context, userManager, logger, adminEmail, adminPassword);
-    }
-    catch (Exception ex)
-    {
-        var logger = app.Services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Database seed failed");
-    }
-});
+    await DbInitializer.InitializeAsync(dbContext, userManager, logger, adminEmail, adminPassword);
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "Database initialization failed");
+    throw;
+}
 
 app.Run();

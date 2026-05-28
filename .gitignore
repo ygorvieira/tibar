@@ -1,6 +1,9 @@
 # .NET
 bin/
 obj/
+*.dll
+*.pdb
+*.exe
 *.user
 *.suo
 *.sln.docstates
