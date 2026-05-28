@@ -49,7 +49,7 @@ export class Transactions implements OnInit {
   private loadTransactions(): void {
     this.loading.set(true);
     this.transactionSvc.getByPeriod(this.startDate, this.endDate).subscribe({
-      next: (res) => { this.transactions = res; this.loading.set(false); },
+      next: (res) => { this.transactions = res.items; this.loading.set(false); },
       error: () => this.loading.set(false)
     });
   }

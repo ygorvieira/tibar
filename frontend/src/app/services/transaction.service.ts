@@ -1,19 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Transaction, CreateTransactionRequest, UpdateTransactionRequest } from '../models/transaction';
+import { Transaction, CreateTransactionRequest, UpdateTransactionRequest, PagedResult } from '../models/transaction';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = '/api/transactions';
 
-  getByPeriod(startDate: string, endDate: string): Observable<Transaction[]> {
+  getByPeriod(startDate: string, endDate: string): Observable<PagedResult<Transaction>> {
     const params = new HttpParams()
       .set('startDate', startDate)
       .set('endDate', endDate);
 
-    return this.http.get<Transaction[]>(this.apiUrl, { params });
+    return this.http.get<PagedResult<Transaction>>(this.apiUrl, { params });
   }
 
   create(data: CreateTransactionRequest): Observable<Transaction> {
