@@ -5,6 +5,25 @@ import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { NotificationService } from '../services/notification.service';
 
+function extractErrors(err: any): string[] {
+  const body = err.error;
+  if (!body) return [];
+
+  if (typeof body === 'string') return [body];
+
+  if (body.errors) {
+    if (Array.isArray(body.errors)) return body.errors;
+
+    if (typeof body.errors === 'object') {
+      return Object.values(body.errors).flatMap(v => Array.isArray(v) ? v : [v]);
+    }
+  }
+
+  if (body.title) return [body.title];
+
+  return [];
+}
+
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const auth = inject(AuthService);
@@ -16,13 +35,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         auth.logout();
         router.navigate(['/login']);
         notifications.error('Sessão expirada. Faça login novamente.');
-      } else if (err.status === 400 && err.error?.errors) {
-        const msgs = Array.isArray(err.error.errors) ? err.error.errors : [err.error.errors];
-        msgs.forEach((m: string) => notifications.error(m));
       } else if (err.status === 0) {
         notifications.error('Erro de rede. Verifique sua conexão.');
       } else {
-        notifications.error(err.error?.errors?.[0] || 'Ocorreu um erro inesperado.');
+        const msgs = extractErrors(err);
+        if (msgs.length) {
+          msgs.forEach(m => notifications.error(m));
+        } else {
+          notifications.error('Ocorreu um erro inesperado.');
+        }
       }
 
       return throwError(() => err);

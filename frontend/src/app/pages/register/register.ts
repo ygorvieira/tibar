@@ -21,7 +21,14 @@ export class Register {
     this.error = '';
     this.auth.register(this.model).subscribe({
       next: () => this.router.navigate(['/dashboard']),
-      error: () => this.error = 'Cadastro falhou. Tente novamente.'
+      error: (err) => {
+        const body = err.error;
+        if (body?.errors) {
+          this.error = Array.isArray(body.errors) ? body.errors[0] : Object.values(body.errors)[0]?.[0];
+        } else {
+          this.error = 'Cadastro falhou. Tente novamente.';
+        }
+      }
     });
   }
 }

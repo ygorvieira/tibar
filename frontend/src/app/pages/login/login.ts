@@ -21,7 +21,14 @@ export class Login {
     this.error = '';
     this.auth.login(this.model).subscribe({
       next: () => this.router.navigate(['/dashboard']),
-      error: () => this.error = 'E-mail ou senha inválidos.'
+      error: (err) => {
+        const body = err.error;
+        if (body?.errors) {
+          this.error = Array.isArray(body.errors) ? body.errors[0] : Object.values(body.errors)[0]?.[0];
+        } else {
+          this.error = 'E-mail ou senha inválidos.';
+        }
+      }
     });
   }
 }
