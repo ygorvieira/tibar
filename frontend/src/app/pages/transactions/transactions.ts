@@ -81,8 +81,17 @@ export class Transactions implements OnInit {
   }
 
   cancelForm(): void {
+    if (this.formHasData() && !confirm('Cancelar a operação? Os dados preenchidos serão perdidos.'))
+      return;
     this.showForm = false;
     this.editingId = null;
+  }
+
+  private formHasData(): boolean {
+    return this.form.description.trim() !== ''
+      || this.form.amount !== 0
+      || this.form.categoryId !== ''
+      || this.form.date !== '';
   }
 
   save(): void {

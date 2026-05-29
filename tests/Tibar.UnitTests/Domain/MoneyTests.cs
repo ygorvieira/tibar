@@ -101,7 +101,7 @@ public class MoneyTests
     {
         var money = Money.Create(100.50m);
 
-        Assert.Equal("100,50 BRL", money.ToString());
+        Assert.Equal("100.50 BRL", money.ToString());
     }
 
     [Fact]

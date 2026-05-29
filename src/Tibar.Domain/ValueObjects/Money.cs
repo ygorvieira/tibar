@@ -1,3 +1,4 @@
+using System.Globalization;
 using Tibar.Domain.Exceptions;
 
 namespace Tibar.Domain.ValueObjects;
@@ -40,5 +41,5 @@ public record Money
         return Create(a.Amount - b.Amount, a.Currency);
     }
 
-    public override string ToString() => $"{Amount:F2} {Currency}";
+    public override string ToString() => $"{Amount.ToString("F2", CultureInfo.InvariantCulture)} {Currency}";
 }
