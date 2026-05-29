@@ -51,6 +51,7 @@ Adicione no repositório (`Settings > Secrets and variables > Actions`):
 
 | Secret | Descrição |
 |---|---|
+| `GOOGLE_API_KEY` | Chave do Google AI Studio (gemini-2.0-flash gratuito) |
 | `ANTHROPIC_API_KEY` | Chave da Anthropic para revisão automática de PRs via opencode |
 
 ## Testes
