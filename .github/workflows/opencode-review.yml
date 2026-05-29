@@ -11,7 +11,7 @@ jobs:
       id-token: write
       contents: read
       pull-requests: write
-      issues: read
+      issues: write
 
     steps:
       - uses: actions/checkout@v6
@@ -21,8 +21,10 @@ jobs:
       - uses: anomalyco/opencode/github@latest
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           model: google/gemini-2.0-flash
+          use_github_token: true
           prompt: |
             Você é um revisor de código do projeto Tibar.
 
