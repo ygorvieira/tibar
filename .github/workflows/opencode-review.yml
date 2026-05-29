@@ -19,6 +19,7 @@ jobs:
           persist-credentials: false
 
       - uses: anomalyco/opencode/github@latest
+        timeout-minutes: 5
         env:
           GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -26,32 +27,11 @@ jobs:
           model: google/gemini-2.0-flash
           use_github_token: true
           prompt: |
-            Você é um revisor de código do projeto Tibar.
+            Revise este PR:
 
-            Revise este Pull Request seguindo **rigorosamente** as regras abaixo:
+            - Commits seguem Conventional Commits?
+            - Código segue o padrão do projeto? (PT-BR, construtores primários, PascalCase)
+            - Tem testes para as mudanças?
+            - `dotnet test` e `ng test` passariam?
 
-            ## Regras de Git Flow
-            - A branch deve ser limpa a partir da main
-            - Commits devem seguir Conventional Commits (feat:, fix:, chore:, etc.)
-
-            ## Regras de Código
-            - Mensagens de erro em português (PT-BR)
-            - Sem comentários desnecessários
-            - Usar construtores primários para DI
-            - Nomes PascalCase
-            - C# 12+ com nullable habilitado
-            - Result pattern: verificar result.IsValid antes de retornar
-
-            ## Spec-Driven Development
-            - Toda mudança de API deve refletir em spec/openapi.json
-            - Mudanças no frontend devem ter testes equivalentes
-            - Cliente Angular deve ser gerado da spec quando a API mudar
-
-            ## CI
-            - `dotnet test` e `ng test` devem passar
-
-            Formate sua revisão como:
-            1. Resumo das mudanças
-            2. Problemas encontrados (se houver)
-            3. Sugestões de melhoria
-            4. Checklist de conformidade
+            Responda em português: resumo das mudanças, problemas encontrados, sugestões.
