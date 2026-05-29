@@ -1,0 +1,37 @@
+name: opencode-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: anomalyco/opencode/github@latest
+        timeout-minutes: 5
+        env:
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: google/gemini-2.0-flash
+          use_github_token: true
+          prompt: |
+            Revise este PR:
+
+            - Commits seguem Conventional Commits?
+            - Código segue o padrão do projeto? (PT-BR, construtores primários, PascalCase)
+            - Tem testes para as mudanças?
+            - `dotnet test` e `ng test` passariam?
+
+            Responda em português: resumo das mudanças, problemas encontrados, sugestões.
