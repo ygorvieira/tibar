@@ -12,8 +12,8 @@ description: >
 ## Git Flow
 
 - **Nunca** commitar diretamente na `main`.
-- Cada nova funcionalidade, correção ou tarefa **deve começar com uma branch limpa a partir da `main`**.
-- **Nunca reaproveitar uma branch existente** — cada feature tem sua própria branch.
+- **Toda e qualquer alteração no código** (features, fixes, refactors, chores, docs, testes) **deve começar com uma branch limpa a partir da `main`**.
+- **Nunca reaproveitar uma branch existente** — cada alteração tem sua própria branch.
 - Prefixos obrigatórios:
   - `fix/` para correções
   - `feat/` para novas funcionalidades
