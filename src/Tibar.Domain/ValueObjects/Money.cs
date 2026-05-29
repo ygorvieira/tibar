@@ -16,10 +16,10 @@ public record Money
     public static Money Create(decimal amount, string currency = "BRL")
     {
         if (amount < 0)
-            throw new DomainException("Amount cannot be negative");
+            throw new DomainException("O valor não pode ser negativo");
 
         if (string.IsNullOrWhiteSpace(currency))
-            throw new DomainException("Currency is required");
+            throw new DomainException("Moeda é obrigatória");
 
         return new Money(amount, currency.ToUpperInvariant());
     }
@@ -27,7 +27,7 @@ public record Money
     public static Money operator +(Money a, Money b)
     {
         if (a.Currency != b.Currency)
-            throw new DomainException("Cannot sum different currencies");
+            throw new DomainException("Não é possível somar moedas diferentes");
 
         return Create(a.Amount + b.Amount, a.Currency);
     }
@@ -35,7 +35,7 @@ public record Money
     public static Money operator -(Money a, Money b)
     {
         if (a.Currency != b.Currency)
-            throw new DomainException("Cannot subtract different currencies");
+            throw new DomainException("Não é possível subtrair moedas diferentes");
 
         return Create(a.Amount - b.Amount, a.Currency);
     }

@@ -13,7 +13,7 @@ public class DeleteTransactionCommandHandler(
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
         if (transaction is null || transaction.UserId != request.UserId)
-            return Result.Failure<Unit>("Transaction not found.");
+            return Result.Failure<Unit>("Transação não encontrada.");
 
         context.Transactions.Remove(transaction);
         await context.SaveChangesAsync(cancellationToken);

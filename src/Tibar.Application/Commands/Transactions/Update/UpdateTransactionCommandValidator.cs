@@ -7,16 +7,16 @@ public class UpdateTransactionCommandValidator : AbstractValidator<UpdateTransac
     public UpdateTransactionCommandValidator()
     {
         RuleFor(x => x.Description)
-            .NotEmpty().WithMessage("Description is required.")
-            .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
+            .NotEmpty().WithMessage("Descrição é obrigatória.")
+            .MaximumLength(500).WithMessage("Descrição não deve exceder 500 caracteres.");
 
         RuleFor(x => x.Amount)
-            .GreaterThan(0).WithMessage("Amount must be greater than zero.");
+            .GreaterThan(0).WithMessage("Valor deve ser maior que zero.");
 
         RuleFor(x => x.CategoryId)
-            .NotEmpty().WithMessage("Category is required.");
+            .NotEmpty().WithMessage("Categoria é obrigatória.");
 
         RuleFor(x => x.Date)
-            .NotEmpty().WithMessage("Date is required.");
+            .NotEmpty().WithMessage("Data é obrigatória.");
     }
 }

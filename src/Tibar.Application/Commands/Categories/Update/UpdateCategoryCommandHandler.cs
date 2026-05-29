@@ -14,7 +14,7 @@ public class UpdateCategoryCommandHandler(
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
         if (category is null || category.UserId != request.UserId)
-            return Result.Failure<DTOs.CategoryDto>("Category not found.");
+            return Result.Failure<DTOs.CategoryDto>("Categoria não encontrada.");
 
         var typeResult = ParseType(request.Type);
         if (!typeResult.IsValid)
@@ -37,7 +37,7 @@ public class UpdateCategoryCommandHandler(
         {
             "income" => Result.Success(TransactionType.Income),
             "expense" => Result.Success(TransactionType.Expense),
-            _ => Result.Failure<TransactionType>("Invalid category type. Must be 'income' or 'expense'.")
+            _ => Result.Failure<TransactionType>("Tipo de categoria inválido. Deve ser 'income' ou 'expense'.")
         };
     }
 }

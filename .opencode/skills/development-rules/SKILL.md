@@ -1,23 +1,35 @@
-# Fluxo de Desenvolvimento
+---
+name: development-rules
+description: >
+  Regras de desenvolvimento do projeto Tibar. Use quando for criar branch,
+  commitar, fazer PR, configurar ambiente ou escrever código C#/Angular.
+  Trigger: branch, commit, PR, code style, git flow, conventional commit, setup,
+  teste, docker compose.
+---
+
+# Regras de Desenvolvimento — Tibar
 
 ## Git Flow
 
-- Nunca commitar diretamente na `main`.
-- Toda alteração deve ser feita em uma branch separada (fix/, feat/, chore/).
+- **Nunca** commitar diretamente na `main`.
+- Toda alteração deve ser feita em uma branch separada com prefixo:
+  - `fix/` para correções
+  - `feat/` para novas funcionalidades
+  - `chore/` para tarefas de manutenção
 - Abrir Pull Request e fazer merge para `main` após revisão.
 
-```
+```bash
 git checkout -b fix/nome-do-fix
 git commit -m "fix: descrição"
 git push origin fix/nome-do-fix
 ```
 
-## Commits
+## Conventional Commits
 
 Seguir [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
-<type>: <descrição>
+<tipo>: <descrição em inglês>
 
 tipos: feat, fix, refactor, chore, docs, test, style
 ```
@@ -49,7 +61,9 @@ Sempre execute os testes antes de abrir um PR.
 ## Code Style
 
 - Sempre seguir os padrões existentes no código.
-- Sem comentários desnecessários.
+- **Sem comentários desnecessários** no código.
 - Usar construtores primários para DI (`public class(...)`).
 - Nomes de arquivos e pastas em PascalCase.
 - C# 12+ com nullable habilitado.
+- Result pattern: toda action verifica `result.IsValid` antes de retornar.
+- Mensagens de erro em português (PT-BR).

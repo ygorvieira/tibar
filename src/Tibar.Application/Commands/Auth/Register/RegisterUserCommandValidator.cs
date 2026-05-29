@@ -7,17 +7,17 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
     public RegisterUserCommandValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Name is required.")
-            .MaximumLength(200).WithMessage("Name must not exceed 200 characters.");
+            .NotEmpty().WithMessage("Nome é obrigatório.")
+            .MaximumLength(200).WithMessage("Nome não deve exceder 200 caracteres.");
 
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Invalid email format.")
-            .MaximumLength(200).WithMessage("Email must not exceed 200 characters.");
+            .NotEmpty().WithMessage("E-mail é obrigatório.")
+            .EmailAddress().WithMessage("Formato de e-mail inválido.")
+            .MaximumLength(200).WithMessage("E-mail não deve exceder 200 caracteres.");
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Password is required.")
-            .MinimumLength(6).WithMessage("Password must be at least 6 characters.")
-            .MaximumLength(100).WithMessage("Password must not exceed 100 characters.");
+            .NotEmpty().WithMessage("Senha é obrigatória.")
+            .MinimumLength(6).WithMessage("Senha deve ter pelo menos 6 caracteres.")
+            .MaximumLength(100).WithMessage("Senha não deve exceder 100 caracteres.");
     }
 }

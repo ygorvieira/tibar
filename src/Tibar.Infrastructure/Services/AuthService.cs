@@ -33,7 +33,7 @@ public class AuthService(
     {
         var existingUser = await userManager.FindByEmailAsync(email);
         if (existingUser is not null)
-            throw new DomainException("Email already registered.", 409);
+            throw new DomainException("E-mail já cadastrado.", 409);
 
         var appUser = new AppUser
         {
@@ -45,9 +45,9 @@ public class AuthService(
         var identityResult = await userManager.CreateAsync(appUser, password);
         if (!identityResult.Succeeded)
         {
-            logger.LogWarning("Registration failed: {Errors}",
+            logger.LogWarning("Falha no registro: {Errors}",
                 string.Join("; ", identityResult.Errors.Select(e => e.Description)));
-            throw new DomainException("Registration failed. Please check your input.");
+            throw new DomainException("Falha no registro. Verifique suas informações.");
         }
 
         var domainUser = new User(name, email);
@@ -63,15 +63,15 @@ public class AuthService(
     {
         var appUser = await userManager.FindByEmailAsync(email);
         if (appUser is null)
-            throw new DomainException("Invalid email or password.");
+            throw new DomainException("E-mail ou senha inválidos.");
 
         if (await userManager.IsLockedOutAsync(appUser))
-            throw new DomainException("Account temporarily locked. Try again later.", 429);
+            throw new DomainException("Conta temporariamente bloqueada. Tente novamente mais tarde.", 429);
 
         if (!await userManager.CheckPasswordAsync(appUser, password))
         {
             await userManager.AccessFailedAsync(appUser);
-            throw new DomainException("Invalid email or password.");
+            throw new DomainException("E-mail ou senha inválidos.");
         }
 
         await userManager.ResetAccessFailedCountAsync(appUser);

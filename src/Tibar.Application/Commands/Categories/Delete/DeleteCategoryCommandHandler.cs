@@ -13,7 +13,7 @@ public class DeleteCategoryCommandHandler(
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
         if (category is null || category.UserId != request.UserId)
-            return Result.Failure<Unit>("Category not found.");
+            return Result.Failure<Unit>("Categoria não encontrada.");
 
         context.Categories.Remove(category);
         await context.SaveChangesAsync(cancellationToken);
