@@ -21,7 +21,7 @@ public class CreateTransactionCommandHandler(
             .FindAsync(new object[] { request.CategoryId }, cancellationToken);
 
         if (category is null || category.UserId != request.UserId)
-            return Result.Failure<DTOs.TransactionDto>("Category not found.");
+            return Result.Failure<DTOs.TransactionDto>("Categoria não encontrada.");
 
         var amountResult = CreateAmount(request.Amount);
         if (!amountResult.IsValid)
@@ -47,7 +47,7 @@ public class CreateTransactionCommandHandler(
         {
             "income" => Result.Success(TransactionType.Income),
             "expense" => Result.Success(TransactionType.Expense),
-            _ => Result.Failure<TransactionType>("Invalid transaction type. Must be 'income' or 'expense'.")
+            _ => Result.Failure<TransactionType>("Tipo de transação inválido. Deve ser 'income' ou 'expense'.")
         };
     }
 

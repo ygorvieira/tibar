@@ -16,7 +16,7 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
         }
         catch (DomainException ex)
         {
-            _logger.LogWarning(ex, "Domain exception: {Message}", ex.Message);
+            _logger.LogWarning(ex, "Exceção de domínio: {Message}", ex.Message);
 
             context.Response.StatusCode = ex.StatusCode;
             context.Response.ContentType = "application/json";
@@ -26,12 +26,12 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception");
+            _logger.LogError(ex, "Exceção não tratada");
 
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
 
-            var response = new { errors = new[] { "An unexpected error occurred." } };
+            var response = new { errors = new[] { "Ocorreu um erro inesperado." } };
             await context.Response.WriteAsJsonAsync(response);
         }
     }

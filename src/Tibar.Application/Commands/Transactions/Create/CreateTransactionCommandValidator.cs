@@ -7,21 +7,21 @@ public class CreateTransactionCommandValidator : AbstractValidator<CreateTransac
     public CreateTransactionCommandValidator()
     {
         RuleFor(x => x.Description)
-            .NotEmpty().WithMessage("Description is required.")
-            .MaximumLength(500).WithMessage("Description must not exceed 500 characters.");
+            .NotEmpty().WithMessage("Descrição é obrigatória.")
+            .MaximumLength(500).WithMessage("Descrição não deve exceder 500 caracteres.");
 
         RuleFor(x => x.Amount)
-            .GreaterThan(0).WithMessage("Amount must be greater than zero.");
+            .GreaterThan(0).WithMessage("Valor deve ser maior que zero.");
 
         RuleFor(x => x.Type)
-            .NotEmpty().WithMessage("Type is required.")
+            .NotEmpty().WithMessage("Tipo é obrigatório.")
             .Must(t => t.ToLower() is "income" or "expense")
-            .WithMessage("Type must be 'income' or 'expense'.");
+            .WithMessage("Tipo deve ser 'income' ou 'expense'.");
 
         RuleFor(x => x.CategoryId)
-            .NotEmpty().WithMessage("Category is required.");
+            .NotEmpty().WithMessage("Categoria é obrigatória.");
 
         RuleFor(x => x.Date)
-            .NotEmpty().WithMessage("Date is required.");
+            .NotEmpty().WithMessage("Data é obrigatória.");
     }
 }

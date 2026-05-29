@@ -9,10 +9,10 @@ public class EmptyStringDateOnlyConverter : JsonConverter<DateOnly>
     {
         var value = reader.GetString();
         if (string.IsNullOrEmpty(value))
-            throw new JsonException("The date field cannot be empty.");
+            throw new JsonException("O campo de data não pode estar vazio.");
 
         if (!DateOnly.TryParse(value, out var date))
-            throw new JsonException($"Invalid date format: '{value}'. Expected a valid date (yyyy-MM-dd).");
+            throw new JsonException($"Formato de data inválido: '{value}'. Espera-se uma data válida (yyyy-MM-dd).");
 
         return date;
     }

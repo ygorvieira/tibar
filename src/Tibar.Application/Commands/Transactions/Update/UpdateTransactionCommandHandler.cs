@@ -15,13 +15,13 @@ public class UpdateTransactionCommandHandler(
             .FindAsync(new object[] { request.Id }, cancellationToken);
 
         if (transaction is null || transaction.UserId != request.UserId)
-            return Result.Failure<DTOs.TransactionDto>("Transaction not found.");
+            return Result.Failure<DTOs.TransactionDto>("Transação não encontrada.");
 
         var category = await context.Categories
             .FindAsync(new object[] { request.CategoryId }, cancellationToken);
 
         if (category is null || category.UserId != request.UserId)
-            return Result.Failure<DTOs.TransactionDto>("Category not found.");
+            return Result.Failure<DTOs.TransactionDto>("Categoria não encontrada.");
 
         Money amount;
         try

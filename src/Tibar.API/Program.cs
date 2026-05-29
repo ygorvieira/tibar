@@ -134,7 +134,7 @@ try
 catch (Exception ex)
 {
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    logger.LogError(ex, "Database initialization failed");
+    logger.LogError(ex, "Falha na inicialização do banco de dados");
     throw;
 }
 

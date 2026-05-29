@@ -34,7 +34,7 @@ public class CreateCategoryCommandHandler(IApplicationDbContext context) : IRequ
         {
             "income" => Result.Success(TransactionType.Income),
             "expense" => Result.Success(TransactionType.Expense),
-            _ => Result.Failure<TransactionType>("Invalid category type. Must be 'income' or 'expense'.")
+            _ => Result.Failure<TransactionType>("Tipo de categoria inválido. Deve ser 'income' ou 'expense'.")
         };
     }
 }

@@ -7,12 +7,12 @@ public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCo
     public CreateCategoryCommandValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Name is required.")
-            .MaximumLength(200).WithMessage("Name must not exceed 200 characters.");
+            .NotEmpty().WithMessage("Nome é obrigatório.")
+            .MaximumLength(200).WithMessage("Nome não deve exceder 200 caracteres.");
 
         RuleFor(x => x.Type)
-            .NotEmpty().WithMessage("Type is required.")
+            .NotEmpty().WithMessage("Tipo é obrigatório.")
             .Must(t => t.ToLower() is "income" or "expense")
-            .WithMessage("Type must be 'income' or 'expense'.");
+            .WithMessage("Tipo deve ser 'income' ou 'expense'.");
     }
 }

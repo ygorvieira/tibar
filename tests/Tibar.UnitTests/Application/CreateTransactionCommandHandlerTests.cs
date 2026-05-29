@@ -63,7 +63,7 @@ public class CreateTransactionCommandHandlerTests
 
         Assert.False(result.IsValid);
         Assert.Single(result.Errors);
-        Assert.Contains("Invalid", result.Errors[0]);
+        Assert.Contains("inválido", result.Errors[0]);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class CreateTransactionCommandHandlerTests
         var result = await _handler.Handle(command, CancellationToken.None);
 
         Assert.False(result.IsValid);
-        Assert.Equal("Category not found.", result.Errors[0]);
+        Assert.Equal("Categoria não encontrada.", result.Errors[0]);
     }
 
     [Fact]
@@ -104,6 +104,6 @@ public class CreateTransactionCommandHandlerTests
         var result = await _handler.Handle(command, CancellationToken.None);
 
         Assert.False(result.IsValid);
-        Assert.Contains("negative", result.Errors[0].ToLower());
+        Assert.Contains("negativo", result.Errors[0].ToLower());
     }
 }

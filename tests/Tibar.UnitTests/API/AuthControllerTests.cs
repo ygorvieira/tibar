@@ -46,7 +46,7 @@ public class AuthControllerTests
         _mediatorMock.Setup(m => m.Send(
                 It.IsAny<RegisterUserCommand>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Failure<TokenResponse>("Email already registered."));
+            .ReturnsAsync(Result.Failure<TokenResponse>("E-mail já cadastrado."));
 
         var request = new RegisterRequest("Alice", "existing@b.com", "123456");
         var result = await _controller.Register(request);
@@ -78,7 +78,7 @@ public class AuthControllerTests
         _mediatorMock.Setup(m => m.Send(
                 It.IsAny<LoginUserCommand>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Failure<TokenResponse>("Invalid email or password."));
+            .ReturnsAsync(Result.Failure<TokenResponse>("E-mail ou senha inválidos."));
 
         var request = new LoginRequest("wrong@b.com", "wrong");
         var result = await _controller.Login(request);

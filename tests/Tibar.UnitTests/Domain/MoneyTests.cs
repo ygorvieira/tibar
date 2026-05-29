@@ -27,7 +27,7 @@ public class MoneyTests
     public void Create_WithNegativeAmount_ThrowsDomainException()
     {
         var ex = Assert.Throws<DomainException>(() => Money.Create(-1));
-        Assert.Equal("Amount cannot be negative", ex.Message);
+        Assert.Equal("O valor não pode ser negativo", ex.Message);
     }
 
     [Fact]
@@ -42,14 +42,14 @@ public class MoneyTests
     public void Create_WithEmptyCurrency_ThrowsDomainException()
     {
         var ex = Assert.Throws<DomainException>(() => Money.Create(100, ""));
-        Assert.Equal("Currency is required", ex.Message);
+        Assert.Equal("Moeda é obrigatória", ex.Message);
     }
 
     [Fact]
     public void Create_WithNullCurrency_ThrowsDomainException()
     {
         var ex = Assert.Throws<DomainException>(() => Money.Create(100, null!));
-        Assert.Equal("Currency is required", ex.Message);
+        Assert.Equal("Moeda é obrigatória", ex.Message);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class MoneyTests
         var b = Money.Create(50, "USD");
 
         var ex = Assert.Throws<DomainException>(() => a + b);
-        Assert.Equal("Cannot sum different currencies", ex.Message);
+        Assert.Equal("Não é possível somar moedas diferentes", ex.Message);
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class MoneyTests
         var b = Money.Create(30, "USD");
 
         var ex = Assert.Throws<DomainException>(() => a - b);
-        Assert.Equal("Cannot subtract different currencies", ex.Message);
+        Assert.Equal("Não é possível subtrair moedas diferentes", ex.Message);
     }
 
     [Fact]
