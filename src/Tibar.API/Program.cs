@@ -1,10 +1,12 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Tibar.API.Converters;
 using Tibar.API.Middleware;
 using Tibar.Application;
 using Tibar.Infrastructure;
@@ -69,6 +71,10 @@ builder.Services.AddHealthChecks();
 builder.Services.AddControllers(options =>
 {
     options.MaxModelValidationErrors = 5;
+}).AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new EmptyStringGuidConverter());
+    options.JsonSerializerOptions.Converters.Add(new EmptyStringDateOnlyConverter());
 });
 
 builder.Services.AddEndpointsApiExplorer();
