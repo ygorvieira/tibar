@@ -45,6 +45,14 @@ refactor: extract date formatting helper
    ```
 3. As migrations e seed do admin (`admin@tibar.com` / `Admin@123`) rodam automaticamente na inicialização da API.
 
+## GitHub Secrets
+
+Adicione no repositório (`Settings > Secrets and variables > Actions`):
+
+| Secret | Descrição |
+|---|---|
+| `ANTHROPIC_API_KEY` | Chave da Anthropic para revisão automática de PRs via opencode |
+
 ## Testes
 
 ```bash

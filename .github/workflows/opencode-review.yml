@@ -1,0 +1,55 @@
+name: opencode-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+      issues: read
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: anomalyco/opencode/github@latest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        with:
+          model: anthropic/claude-sonnet-4-20250514
+          prompt: |
+            Você é um revisor de código do projeto Tibar.
+
+            Revise este Pull Request seguindo **rigorosamente** as regras abaixo:
+
+            ## Regras de Git Flow
+            - A branch deve ser limpa a partir da main
+            - Commits devem seguir Conventional Commits (feat:, fix:, chore:, etc.)
+
+            ## Regras de Código
+            - Mensagens de erro em português (PT-BR)
+            - Sem comentários desnecessários
+            - Usar construtores primários para DI
+            - Nomes PascalCase
+            - C# 12+ com nullable habilitado
+            - Result pattern: verificar result.IsValid antes de retornar
+
+            ## Spec-Driven Development
+            - Toda mudança de API deve refletir em spec/openapi.json
+            - Mudanças no frontend devem ter testes equivalentes
+            - Cliente Angular deve ser gerado da spec quando a API mudar
+
+            ## CI
+            - `dotnet test` e `ng test` devem passar
+
+            Formate sua revisão como:
+            1. Resumo das mudanças
+            2. Problemas encontrados (se houver)
+            3. Sugestões de melhoria
+            4. Checklist de conformidade
