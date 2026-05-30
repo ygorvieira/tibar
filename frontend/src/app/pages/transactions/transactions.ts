@@ -83,6 +83,10 @@ export class Transactions implements OnInit {
   cancelForm(): void {
     if (this.formHasData() && !confirm('Cancelar a operação? Os dados preenchidos serão perdidos.'))
       return;
+    this.resetForm();
+  }
+
+  private resetForm(): void {
     this.showForm = false;
     this.editingId = null;
   }
@@ -107,7 +111,7 @@ export class Transactions implements OnInit {
       this.transactionSvc.update(this.editingId, data).subscribe({
         next: () => {
           this.notifications.success('Transação atualizada.');
-          this.cancelForm(); this.loadTransactions(); this.saving.set(false);
+          this.resetForm(); this.loadTransactions(); this.saving.set(false);
         },
         error: () => this.saving.set(false)
       });
@@ -115,7 +119,7 @@ export class Transactions implements OnInit {
       this.transactionSvc.create(this.form).subscribe({
         next: () => {
           this.notifications.success('Transação criada.');
-          this.cancelForm(); this.loadTransactions(); this.saving.set(false);
+          this.resetForm(); this.loadTransactions(); this.saving.set(false);
         },
         error: () => this.saving.set(false)
       });
