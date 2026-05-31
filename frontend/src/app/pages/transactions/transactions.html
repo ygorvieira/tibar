@@ -79,7 +79,7 @@
     <tbody>
       @for (t of transactions; track t.id) {
         <tr>
-          <td>{{ t.date | date }}</td>
+          <td>{{ t.date | date:'dd/MM/yyyy' }}</td>
           <td>{{ t.description }}</td>
           <td>{{ t.categoryName }}</td>
           <td>
