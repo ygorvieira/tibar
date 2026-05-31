@@ -1,6 +1,16 @@
 <h1>Painel</h1>
 
-<p class="period">{{ startDate | date }} — {{ endDate | date }}</p>
+<div class="filters">
+  <label>
+    Início
+    <input type="date" [(ngModel)]="startDate" />
+  </label>
+  <label>
+    Fim
+    <input type="date" [(ngModel)]="endDate" />
+  </label>
+  <button class="btn-secondary" (click)="filter()" [disabled]="loading()">Filtrar</button>
+</div>
 
 @if (loading()) {
   <p class="loading">Carregando...</p>
