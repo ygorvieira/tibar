@@ -1,11 +1,12 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { DatePipe, CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { CurrencyPipe } from '@angular/common';
 import { DashboardService } from '../../services/dashboard.service';
 import { Balance } from '../../models/balance';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [DatePipe, CurrencyPipe],
+  imports: [FormsModule, CurrencyPipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
@@ -24,10 +25,10 @@ export class Dashboard implements OnInit {
   }
 
   ngOnInit(): void {
-    this.load();
+    this.filter();
   }
 
-  private load(): void {
+  filter(): void {
     this.loading.set(true);
     this.dashboard.getBalance(this.startDate, this.endDate).subscribe({
       next: (res) => { this.balance = res; this.loading.set(false); },
