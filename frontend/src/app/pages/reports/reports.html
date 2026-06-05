@@ -1,0 +1,60 @@
+<h1>Relatórios</h1>
+
+<div class="filters">
+  <label>
+    Início
+    <input type="date" [(ngModel)]="startDate" />
+  </label>
+  <label>
+    Fim
+    <input type="date" [(ngModel)]="endDate" />
+  </label>
+  <button class="btn-secondary" (click)="filter()" [disabled]="loading()">Filtrar</button>
+</div>
+
+@if (loading()) {
+  <p class="loading">Carregando...</p>
+} @else if (report) {
+  @for (m of report.months; track m.year + '-' + m.month) {
+    <section class="month-section">
+      <h2>{{ monthNames[m.month] }} / {{ m.year }}</h2>
+
+      <div class="category-cards">
+        @for (c of m.topCategories; track c.categoryId; let i = $index) {
+          <div class="card">
+            <div class="card-header">
+              <span class="rank">#{{ i + 1 }}</span>
+              <div class="card-title">
+                <strong>{{ c.categoryName }}</strong>
+                <span class="total">{{ c.totalAmount | currency: 'BRL' }}</span>
+              </div>
+            </div>
+
+            @if (c.topDescriptions.length > 0) {
+              <table>
+                <thead>
+                  <tr>
+                    <th>Descrição</th>
+                    <th>Qtd</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (d of c.topDescriptions; track d.description) {
+                    <tr>
+                      <td>{{ d.description }}</td>
+                      <td>{{ d.occurrences }}x</td>
+                      <td class="expense">{{ d.totalAmount | currency: 'BRL' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  } @empty {
+    <p class="empty">Nenhum resultado encontrado.</p>
+  }
+}
