@@ -24,11 +24,13 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr diff "$PR_NUMBER" > /tmp/pr-diff.txt
-          gh pr view "$PR_NUMBER" --json commits --jq '.commits[].messageHeadline' > /tmp/pr-commits.txt
+          echo "Revisando PR #$PR_NUMBER..."
 
-          python3 << 'PYEOF' || gh pr comment "$PR_NUMBER" --body "⚠️ Revisão automática falhou."
-import json, os, sys, urllib.request
+          gh pr diff "$PR_NUMBER" > /tmp/pr-diff.txt 2>&1
+          gh pr view "$PR_NUMBER" --json commits --jq '.commits[].messageHeadline' > /tmp/pr-commits.txt 2>&1
+
+          python3 << 'PYEOF' 2>/tmp/py-err.log
+import json, os, urllib.request
 
 key = os.environ.get('GOOGLE_API_KEY', '')
 diff = open('/tmp/pr-diff.txt').read()
@@ -60,6 +62,11 @@ with open('/tmp/review.txt', 'w') as f:
     f.write(review)
 PYEOF
 
-          if [ -f /tmp/review.txt ]; then
+          if [ -f /tmp/review.txt ] && [ -s /tmp/review.txt ]; then
             gh pr comment "$PR_NUMBER" --body "$(cat /tmp/review.txt)"
+            echo "Review publicado com sucesso!"
+          else
+            echo "Review vazio, verificando erro..."
+            cat /tmp/py-err.log 2>/dev/null || true
+            gh pr comment "$PR_NUMBER" --body "⚠️ Revisão automática falhou."
           fi
