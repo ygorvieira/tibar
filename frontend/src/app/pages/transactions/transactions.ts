@@ -22,6 +22,8 @@ export class Transactions implements OnInit {
   categories: Category[] = [];
   startDate: string;
   endDate: string;
+  filterCategoryId = '';
+  filterType = '';
   showForm = false;
   editingId: string | null = null;
   loading = signal(true);
@@ -48,7 +50,12 @@ export class Transactions implements OnInit {
 
   private loadTransactions(): void {
     this.loading.set(true);
-    this.transactionSvc.getByPeriod(this.startDate, this.endDate).subscribe({
+    this.transactionSvc.getByPeriod(
+      this.startDate,
+      this.endDate,
+      this.filterCategoryId || undefined,
+      this.filterType || undefined
+    ).subscribe({
       next: (res) => { this.transactions = res.items; this.loading.set(false); },
       error: () => this.loading.set(false)
     });
