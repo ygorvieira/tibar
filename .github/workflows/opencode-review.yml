@@ -33,7 +33,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_REPO: ${{ github.repository }}
         run: |
-          import json, os, urllib.request
+          import json, os, time, urllib.request
 
           key = os.environ['GOOGLE_API_KEY']
           token = os.environ['GH_TOKEN']
@@ -46,10 +46,19 @@ jobs:
           prompt = 'Revise este PR:\n\nCommits:\n' + commits + '\n\nDiff:\n' + diff + '\n\n- Commits seguem Conventional Commits?\n- Codigo segue o padrao do projeto? (PT-BR, construtores primarios, PascalCase)\n- Tem testes para as mudancas?\n- Testes passariam?\n\nResponda em portugues: resumo das mudancas, problemas encontrados, sugestoes.'
 
           body = json.dumps({'contents': [{'parts': [{'text': prompt}]}]}).encode()
-          req = urllib.request.Request(
-              'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key,
-              data=body, headers={'Content-Type': 'application/json'})
-          resp = json.loads(urllib.request.urlopen(req).read())
+          url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key
+
+          for attempt in range(3):
+            try:
+              req = urllib.request.Request(url, data=body, headers={'Content-Type': 'application/json'})
+              resp = json.loads(urllib.request.urlopen(req).read())
+              break
+            except urllib.error.HTTPError as e:
+              if e.code == 429 and attempt < 2:
+                time.sleep(5 * (attempt + 1))
+                continue
+              raise
+
           review = resp['candidates'][0]['content']['parts'][0]['text']
 
           comment_body = json.dumps({'body': review}).encode()
