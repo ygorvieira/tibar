@@ -33,7 +33,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_REPO: ${{ github.repository }}
         run: |
-          import json, os, time, urllib.request
+          import json, os, time, urllib.error, urllib.request
 
           key = os.environ['GOOGLE_API_KEY']
           token = os.environ['GH_TOKEN']
@@ -54,10 +54,12 @@ jobs:
               resp = json.loads(urllib.request.urlopen(req).read())
               break
             except urllib.error.HTTPError as e:
+              err_body = e.read().decode()
+              print(f'Tentativa {attempt+1}: HTTP {e.code} - {err_body[:200]}')
               if e.code == 429 and attempt < 2:
-                time.sleep(5 * (attempt + 1))
+                time.sleep(10)
                 continue
-              raise
+              raise Exception(f'API error {e.code}: {err_body[:300]}')
 
           review = resp['candidates'][0]['content']['parts'][0]['text']
 
