@@ -17,6 +17,12 @@ public class GetTransactionsByPeriodQueryHandler(
                 && t.Date >= request.StartDate
                 && t.Date <= request.EndDate);
 
+        if (request.CategoryId.HasValue)
+            query = query.Where(t => t.CategoryId == request.CategoryId.Value);
+
+        if (!string.IsNullOrWhiteSpace(request.Type))
+            query = query.Where(t => t.Type.ToString() == request.Type);
+
         var totalCount = await query.CountAsync(cancellationToken);
 
         var dtos = await query

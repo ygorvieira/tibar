@@ -9,4 +9,6 @@ public record GetTransactionsByPeriodQuery(
     DateOnly StartDate,
     DateOnly EndDate,
     int Page = 1,
-    int PageSize = 50) : IRequest<Result<PagedResult<TransactionDto>>>;
+    int PageSize = 50,
+    Guid? CategoryId = null,
+    string? Type = null) : IRequest<Result<PagedResult<TransactionDto>>>;

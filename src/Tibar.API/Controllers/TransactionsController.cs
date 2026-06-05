@@ -24,11 +24,13 @@ public class TransactionsController(IMediator mediator) : ControllerBase
         [FromQuery] DateOnly startDate,
         [FromQuery] DateOnly endDate,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50)
+        [FromQuery] int pageSize = 50,
+        [FromQuery] Guid? categoryId = null,
+        [FromQuery] string? type = null)
     {
         var userId = GetUserId();
         var result = await _mediator.Send(
-            new GetTransactionsByPeriodQuery(userId, startDate, endDate, page, pageSize));
+            new GetTransactionsByPeriodQuery(userId, startDate, endDate, page, pageSize, categoryId, type));
 
         if (!result.IsValid)
             return BadRequest(new { errors = result.Errors });
