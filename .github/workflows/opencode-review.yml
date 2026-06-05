@@ -23,16 +23,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPO: ${{ github.repository }}
         run: |
-          echo "Revisando PR #$PR_NUMBER..."
-
           gh pr diff "$PR_NUMBER" > /tmp/pr-diff.txt 2>&1
           gh pr view "$PR_NUMBER" --json commits --jq '.commits[].messageHeadline' > /tmp/pr-commits.txt 2>&1
 
-          python3 << 'PYEOF' 2>/tmp/py-err.log
+          python3 << 'PYEOF'
 import json, os, urllib.request
 
 key = os.environ.get('GOOGLE_API_KEY', '')
+token = os.environ.get('GH_TOKEN', '')
+repo = os.environ.get('GITHUB_REPO', '')
+pr = os.environ.get('PR_NUMBER', '')
+
 diff = open('/tmp/pr-diff.txt').read()
 commits = open('/tmp/pr-commits.txt').read()
 
@@ -58,15 +61,16 @@ req = urllib.request.Request(
 resp = json.loads(urllib.request.urlopen(req).read())
 review = resp['candidates'][0]['content']['parts'][0]['text']
 
-with open('/tmp/review.txt', 'w') as f:
-    f.write(review)
+# Post comment via GitHub API
+comment_body = json.dumps({'body': review}).encode()
+req2 = urllib.request.Request(
+    f'https://api.github.com/repos/{repo}/issues/{pr}/comments',
+    data=comment_body,
+    headers={
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
+    })
+urllib.request.urlopen(req2)
+print("Review publicado com sucesso!")
 PYEOF
-
-          if [ -f /tmp/review.txt ] && [ -s /tmp/review.txt ]; then
-            gh pr comment "$PR_NUMBER" --body "$(cat /tmp/review.txt)"
-            echo "Review publicado com sucesso!"
-          else
-            echo "Review vazio, verificando erro..."
-            cat /tmp/py-err.log 2>/dev/null || true
-            gh pr comment "$PR_NUMBER" --body "⚠️ Revisão automática falhou."
-          fi
