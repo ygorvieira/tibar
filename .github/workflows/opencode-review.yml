@@ -8,30 +8,58 @@ jobs:
   review:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
       contents: read
       pull-requests: write
-      issues: write
 
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+          fetch-depth: 0
 
-      - uses: anomalyco/opencode/github@latest
+      - name: Review PR
         timeout-minutes: 5
         env:
-          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          model: google/gemini-2.0-flash
-          use_github_token: true
-          prompt: |
-            Revise este PR:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr diff "$PR_NUMBER" > /tmp/pr-diff.txt
+          gh pr view "$PR_NUMBER" --json commits --jq '.commits[].messageHeadline' > /tmp/pr-commits.txt
 
-            - Commits seguem Conventional Commits?
-            - Código segue o padrão do projeto? (PT-BR, construtores primários, PascalCase)
-            - Tem testes para as mudanças?
-            - `dotnet test` e `ng test` passariam?
+          python3 << 'PYEOF' || gh pr comment "$PR_NUMBER" --body "⚠️ Revisão automática falhou."
+import json, os, sys, urllib.request
 
-            Responda em português: resumo das mudanças, problemas encontrados, sugestões.
+key = os.environ.get('GOOGLE_API_KEY', '')
+diff = open('/tmp/pr-diff.txt').read()
+commits = open('/tmp/pr-commits.txt').read()
+
+prompt = f'''Revise este PR:
+
+Commits:
+{commits}
+
+Diff:
+{diff}
+
+- Commits seguem Conventional Commits?
+- Codigo segue o padrao do projeto? (PT-BR, construtores primarios, PascalCase)
+- Tem testes para as mudancas?
+- Testes passariam?
+
+Responda em portugues: resumo das mudancas, problemas encontrados, sugestoes.'''
+
+body = json.dumps({'contents': [{'parts': [{'text': prompt}]}]}).encode()
+req = urllib.request.Request(
+    f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key}',
+    data=body, headers={'Content-Type': 'application/json'})
+resp = json.loads(urllib.request.urlopen(req).read())
+review = resp['candidates'][0]['content']['parts'][0]['text']
+
+with open('/tmp/review.txt', 'w') as f:
+    f.write(review)
+PYEOF
+
+          if [ -f /tmp/review.txt ]; then
+            gh pr comment "$PR_NUMBER" --body "$(cat /tmp/review.txt)"
+          fi
