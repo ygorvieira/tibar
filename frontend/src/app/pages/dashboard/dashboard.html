@@ -9,26 +9,70 @@
     Fim
     <input type="date" [(ngModel)]="endDate" />
   </label>
+  <label>
+    Categoria
+    <select [(ngModel)]="filterCategoryId">
+      <option value="">Todas</option>
+      @for (c of categories; track c.id) {
+        <option [value]="c.id">{{ c.name }}</option>
+      }
+    </select>
+  </label>
+  <label>
+    Tipo
+    <select [(ngModel)]="filterType">
+      <option value="">Todos</option>
+      <option value="Income">Receita</option>
+      <option value="Expense">Despesa</option>
+    </select>
+  </label>
   <button class="btn-secondary" (click)="filter()" [disabled]="loading()">Filtrar</button>
 </div>
 
 @if (loading()) {
   <p class="loading">Carregando...</p>
-} @else if (balance) {
-  <div class="cards">
-    <div class="card income">
-      <h3>Receitas</h3>
-      <span class="value">{{ balance.totalIncome | currency: balance.currency }}</span>
-    </div>
+} @else {
+  @if (balance) {
+    <div class="cards">
+      <div class="card income">
+        <h3>Receitas</h3>
+        <span class="value">{{ balance.totalIncome | currency: balance.currency }}</span>
+      </div>
 
-    <div class="card expense">
-      <h3>Despesas</h3>
-      <span class="value">{{ balance.totalExpense | currency: balance.currency }}</span>
-    </div>
+      <div class="card expense">
+        <h3>Despesas</h3>
+        <span class="value">{{ balance.totalExpense | currency: balance.currency }}</span>
+      </div>
 
-    <div class="card balance" [class.positive]="balance.balance >= 0" [class.negative]="balance.balance < 0">
-      <h3>Saldo</h3>
-      <span class="value">{{ balance.balance | currency: balance.currency }}</span>
+      <div class="card balance" [class.positive]="balance.balance >= 0" [class.negative]="balance.balance < 0">
+        <h3>Saldo</h3>
+        <span class="value">{{ balance.balance | currency: balance.currency }}</span>
+      </div>
     </div>
-  </div>
+  }
+
+  <table>
+    <thead>
+      <tr>
+        <th>Mês</th>
+        <th>Receitas</th>
+        <th>Despesas</th>
+        <th>Saldo</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (m of monthlyBalances; track m.year + '-' + m.month) {
+        <tr>
+          <td>{{ monthNames[m.month] }} / {{ m.year }}</td>
+          <td class="income">{{ m.totalIncome | currency: m.currency }}</td>
+          <td class="expense">{{ m.totalExpense | currency: m.currency }}</td>
+          <td [class.positive]="m.balance >= 0" [class.negative]="m.balance < 0">
+            {{ m.balance | currency: m.currency }}
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="4" class="empty">Nenhum resultado encontrado.</td></tr>
+      }
+    </tbody>
+  </table>
 }

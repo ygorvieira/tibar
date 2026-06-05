@@ -13,11 +13,18 @@ public class GetBalanceByPeriodQueryHandler(
     public async Task<Result<DTOs.BalanceDto>> Handle(
         GetBalanceByPeriodQuery request, CancellationToken cancellationToken)
     {
-        var transactions = await context.Transactions
+        var query = context.Transactions
             .Where(t => t.UserId == request.UserId
                 && t.Date >= request.StartDate
-                && t.Date <= request.EndDate)
-            .ToListAsync(cancellationToken);
+                && t.Date <= request.EndDate);
+
+        if (request.CategoryId.HasValue)
+            query = query.Where(t => t.CategoryId == request.CategoryId.Value);
+
+        if (!string.IsNullOrWhiteSpace(request.Type))
+            query = query.Where(t => t.Type.ToString() == request.Type);
+
+        var transactions = await query.ToListAsync(cancellationToken);
 
         var totalIncome = transactions
             .Where(t => t.Type == TransactionType.Income)

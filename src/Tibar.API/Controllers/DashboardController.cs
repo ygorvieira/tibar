@@ -19,11 +19,30 @@ public class DashboardController(IMediator mediator) : ControllerBase
     [HttpGet("balance")]
     public async Task<IActionResult> GetBalance(
         [FromQuery] DateOnly startDate,
-        [FromQuery] DateOnly endDate)
+        [FromQuery] DateOnly endDate,
+        [FromQuery] Guid? categoryId = null,
+        [FromQuery] string? type = null)
     {
         var userId = GetUserId();
         var result = await _mediator.Send(
-            new GetBalanceByPeriodQuery(userId, startDate, endDate));
+            new GetBalanceByPeriodQuery(userId, startDate, endDate, categoryId, type));
+
+        if (!result.IsValid)
+            return BadRequest(new { errors = result.Errors });
+
+        return Ok(result.Data);
+    }
+
+    [HttpGet("monthly")]
+    public async Task<IActionResult> GetMonthlyBalances(
+        [FromQuery] DateOnly startDate,
+        [FromQuery] DateOnly endDate,
+        [FromQuery] Guid? categoryId = null,
+        [FromQuery] string? type = null)
+    {
+        var userId = GetUserId();
+        var result = await _mediator.Send(
+            new GetMonthlyBalancesQuery(userId, startDate, endDate, categoryId, type));
 
         if (!result.IsValid)
             return BadRequest(new { errors = result.Errors });
