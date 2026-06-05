@@ -4,9 +4,9 @@ using Tibar.Application.DTOs;
 
 namespace Tibar.Application.Queries.Dashboard;
 
-public record GetBalanceByPeriodQuery(
+public record GetMonthlyBalancesQuery(
     Guid UserId,
     DateOnly StartDate,
     DateOnly EndDate,
     Guid? CategoryId = null,
-    string? Type = null) : IRequest<Result<BalanceDto>>;
+    string? Type = null) : IRequest<Result<List<MonthlyBalanceDto>>>;
