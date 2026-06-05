@@ -19,13 +19,14 @@ jobs:
           persist-credentials: false
 
       - uses: anomalyco/opencode/github@v1.16.0
-        timeout-minutes: 5
+        timeout-minutes: 10
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          model: anthropic/claude-sonnet-4-20250514
+          model: google/gemini-2.0-flash
           use_github_token: true
+          variant: low
           prompt: |
             Revise este PR:
 

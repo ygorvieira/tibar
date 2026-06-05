@@ -1,4 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["DEVELOPMENT.md"]
+  "instructions": ["DEVELOPMENT.md"],
+  "model": "google/gemini-2.0-flash"
 }
