@@ -17,49 +17,60 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Review PR
-        timeout-minutes: 5
+      - name: Fetch PR diff
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          gh pr diff "$PR_NUMBER" > /tmp/pr-diff.txt
-          gh pr view "$PR_NUMBER" --json commits --jq '.commits[].messageHeadline' > /tmp/pr-commits.txt
+          gh pr diff "$PR_NUMBER" > /tmp/pr-diff.txt 2>&1
+          gh pr view "$PR_NUMBER" --json commits --jq '.commits[].messageHeadline' > /tmp/pr-commits.txt 2>&1
 
-          python3 << 'PYEOF' || gh pr comment "$PR_NUMBER" --body "⚠️ Revisão automática falhou."
-import json, os, sys, urllib.request
+      - name: Generate and post review
+        shell: python3 {0}
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          import json, os, time, urllib.error, urllib.request
 
-key = os.environ.get('GOOGLE_API_KEY', '')
-diff = open('/tmp/pr-diff.txt').read()
-commits = open('/tmp/pr-commits.txt').read()
+          key = os.environ['GOOGLE_API_KEY']
+          token = os.environ['GH_TOKEN']
+          repo = os.environ['GITHUB_REPO']
+          pr = os.environ['PR_NUMBER']
 
-prompt = f'''Revise este PR:
+          diff = open('/tmp/pr-diff.txt').read()
+          commits = open('/tmp/pr-commits.txt').read()
 
-Commits:
-{commits}
+          prompt = 'Revise este PR:\n\nCommits:\n' + commits + '\n\nDiff:\n' + diff + '\n\n- Commits seguem Conventional Commits?\n- Codigo segue o padrao do projeto? (PT-BR, construtores primarios, PascalCase)\n- Tem testes para as mudancas?\n- Testes passariam?\n\nResponda em portugues: resumo das mudancas, problemas encontrados, sugestoes.'
 
-Diff:
-{diff}
+          body = json.dumps({'contents': [{'parts': [{'text': prompt}]}]}).encode()
+          url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key
 
-- Commits seguem Conventional Commits?
-- Codigo segue o padrao do projeto? (PT-BR, construtores primarios, PascalCase)
-- Tem testes para as mudancas?
-- Testes passariam?
+          for attempt in range(3):
+            try:
+              req = urllib.request.Request(url, data=body, headers={'Content-Type': 'application/json'})
+              resp = json.loads(urllib.request.urlopen(req).read())
+              break
+            except urllib.error.HTTPError as e:
+              err_body = e.read().decode()
+              print(f'Tentativa {attempt+1}: HTTP {e.code} - {err_body[:200]}')
+              if e.code == 429 and attempt < 2:
+                time.sleep(10)
+                continue
+              raise Exception(f'API error {e.code}: {err_body[:300]}')
 
-Responda em portugues: resumo das mudancas, problemas encontrados, sugestoes.'''
+          review = resp['candidates'][0]['content']['parts'][0]['text']
 
-body = json.dumps({'contents': [{'parts': [{'text': prompt}]}]}).encode()
-req = urllib.request.Request(
-    f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key}',
-    data=body, headers={'Content-Type': 'application/json'})
-resp = json.loads(urllib.request.urlopen(req).read())
-review = resp['candidates'][0]['content']['parts'][0]['text']
-
-with open('/tmp/review.txt', 'w') as f:
-    f.write(review)
-PYEOF
-
-          if [ -f /tmp/review.txt ]; then
-            gh pr comment "$PR_NUMBER" --body "$(cat /tmp/review.txt)"
-          fi
+          comment_body = json.dumps({'body': review}).encode()
+          req2 = urllib.request.Request(
+              'https://api.github.com/repos/' + repo + '/issues/' + pr + '/comments',
+              data=comment_body,
+              headers={
+                  'Authorization': 'Bearer ' + token,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/vnd.github.v3+json'
+              })
+          urllib.request.urlopen(req2)
+          print('Review publicado com sucesso!')
