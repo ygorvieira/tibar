@@ -18,27 +18,36 @@ public class GetExpenseReportQueryHandler(
                 && t.Type == TransactionType.Expense
                 && t.Date >= request.StartDate
                 && t.Date <= request.EndDate)
-            .Include(t => t.Category)
+            .Select(t => new
+            {
+                t.Id,
+                t.Description,
+                t.Amount.Amount,
+                t.Date.Year,
+                t.Date.Month,
+                t.CategoryId,
+                CategoryName = t.Category.Name
+            })
             .ToListAsync(cancellationToken);
 
         var monthly = expenses
-            .GroupBy(t => new { t.Date.Year, t.Date.Month })
+            .GroupBy(t => new { t.Year, t.Month })
             .OrderByDescending(g => g.Key.Year)
             .ThenByDescending(g => g.Key.Month)
             .Select(g =>
             {
                 var categories = g
-                    .GroupBy(t => new { t.CategoryId, t.Category.Name })
+                    .GroupBy(t => new { t.CategoryId, t.CategoryName })
                     .Select(cg => new DTOs.CategoryExpenseDto(
                         cg.Key.CategoryId,
-                        cg.Key.Name,
-                        cg.Sum(t => t.Amount.Amount),
+                        cg.Key.CategoryName,
+                        cg.Sum(t => t.Amount),
                         cg
                             .GroupBy(t => t.Description)
                             .Select(dg => new DTOs.DescriptionSummaryDto(
                                 dg.Key,
                                 dg.Count(),
-                                dg.Sum(t => t.Amount.Amount)))
+                                dg.Sum(t => t.Amount)))
                             .OrderByDescending(d => d.Occurrences)
                             .Take(5)
                             .ToList()))

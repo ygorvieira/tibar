@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -33,7 +33,7 @@ services:
     links:
       - db
     ports:
-      - "5000:8080"
+      - "5002:8080"
     depends_on:
       db:
         condition: service_healthy
@@ -43,7 +43,7 @@ services:
       context: frontend
       dockerfile: Dockerfile
     ports:
-      - "4200:80"
+      - "8082:80"
     depends_on:
       - api
 
