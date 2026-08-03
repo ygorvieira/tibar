@@ -8,12 +8,13 @@ namespace Tibar.UnitTests.Domain;
 public class TransactionTests
 {
     private readonly Guid _categoryId = Guid.NewGuid();
+    private readonly Guid _accountId = Guid.NewGuid();
     private readonly Guid _userId = Guid.NewGuid();
 
     private Transaction CreateValidTransaction()
     {
         var amount = Money.Create(100, "BRL");
-        return new Transaction("Test", amount, TransactionType.Expense, _categoryId, _userId, new DateOnly(2026, 5, 27));
+        return new Transaction("Test", amount, TransactionType.Expense, _categoryId, _accountId, _userId, new DateOnly(2026, 5, 27));
     }
 
     [Fact]
@@ -26,6 +27,7 @@ public class TransactionTests
         Assert.Equal(100, tx.Amount.Amount);
         Assert.Equal(TransactionType.Expense, tx.Type);
         Assert.Equal(_categoryId, tx.CategoryId);
+        Assert.Equal(_accountId, tx.AccountId);
         Assert.Equal(_userId, tx.UserId);
         Assert.Equal(date, tx.Date);
         Assert.NotEqual(Guid.Empty, tx.Id);
@@ -76,6 +78,18 @@ public class TransactionTests
         tx.UpdateCategory(newCategoryId);
 
         Assert.Equal(newCategoryId, tx.CategoryId);
+        Assert.NotNull(tx.UpdatedAt);
+    }
+
+    [Fact]
+    public void UpdateAccount_ChangesAccountId()
+    {
+        var tx = CreateValidTransaction();
+        var newAccountId = Guid.NewGuid();
+
+        tx.UpdateAccount(newAccountId);
+
+        Assert.Equal(newAccountId, tx.AccountId);
         Assert.NotNull(tx.UpdatedAt);
     }
 }

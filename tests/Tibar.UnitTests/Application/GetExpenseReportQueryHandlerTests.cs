@@ -14,6 +14,7 @@ public class GetExpenseReportQueryHandlerTests
 {
     private readonly Mock<IApplicationDbContext> _contextMock;
     private readonly GetExpenseReportQueryHandler _handler;
+    private readonly Guid _accountId = Guid.NewGuid();
 
     public GetExpenseReportQueryHandlerTests()
     {
@@ -81,12 +82,12 @@ public class GetExpenseReportQueryHandlerTests
 
         var transactions = new List<Transaction>
         {
-            new("Supermercado", Money.Create(500), TransactionType.Expense, foodId, userId, new DateOnly(2026, 5, 5)),
-            new("Restaurante", Money.Create(80), TransactionType.Expense, foodId, userId, new DateOnly(2026, 5, 10)),
-            new("Supermercado", Money.Create(200), TransactionType.Expense, foodId, userId, new DateOnly(2026, 5, 15)),
-            new("Uber", Money.Create(35), TransactionType.Expense, transportId, userId, new DateOnly(2026, 5, 3)),
-            new("Gasolina", Money.Create(150), TransactionType.Expense, transportId, userId, new DateOnly(2026, 5, 20)),
-            new("Salário", Money.Create(5000), TransactionType.Income, Guid.NewGuid(), userId, new DateOnly(2026, 5, 1)),
+            new("Supermercado", Money.Create(500), TransactionType.Expense, foodId, _accountId, userId, new DateOnly(2026, 5, 5)),
+            new("Restaurante", Money.Create(80), TransactionType.Expense, foodId, _accountId, userId, new DateOnly(2026, 5, 10)),
+            new("Supermercado", Money.Create(200), TransactionType.Expense, foodId, _accountId, userId, new DateOnly(2026, 5, 15)),
+            new("Uber", Money.Create(35), TransactionType.Expense, transportId, _accountId, userId, new DateOnly(2026, 5, 3)),
+            new("Gasolina", Money.Create(150), TransactionType.Expense, transportId, _accountId, userId, new DateOnly(2026, 5, 20)),
+            new("Salário", Money.Create(5000), TransactionType.Income, Guid.NewGuid(), _accountId, userId, new DateOnly(2026, 5, 1)),
         };
 
         // Set navigation properties
@@ -129,8 +130,8 @@ public class GetExpenseReportQueryHandlerTests
 
         var transactions = new List<Transaction>
         {
-            new("Item", Money.Create(100), TransactionType.Expense, catId, userId, new DateOnly(2026, 4, 15)),
-            new("Item", Money.Create(200), TransactionType.Expense, catId, userId, new DateOnly(2026, 5, 15)),
+            new("Item", Money.Create(100), TransactionType.Expense, catId, _accountId, userId, new DateOnly(2026, 4, 15)),
+            new("Item", Money.Create(200), TransactionType.Expense, catId, _accountId, userId, new DateOnly(2026, 5, 15)),
         };
 
         foreach (var t in transactions)
@@ -152,6 +153,39 @@ public class GetExpenseReportQueryHandlerTests
     }
 
     [Fact]
+    public async Task Handle_FiltersByAccount_ExcludesOtherAccounts()
+    {
+        var userId = Guid.NewGuid();
+        var accountA = Guid.NewGuid();
+        var accountB = Guid.NewGuid();
+        var catId = Guid.NewGuid();
+        var start = new DateOnly(2026, 5, 1);
+        var end = new DateOnly(2026, 5, 31);
+
+        var cat = new Category("Teste", TransactionType.Expense, userId);
+        typeof(BaseEntity).GetProperty("Id")!.SetValue(cat, catId);
+
+        var transactions = new List<Transaction>
+        {
+            new("Item", Money.Create(100), TransactionType.Expense, catId, accountA, userId, new DateOnly(2026, 5, 15)),
+            new("Item", Money.Create(200), TransactionType.Expense, catId, accountB, userId, new DateOnly(2026, 5, 15)),
+        };
+
+        foreach (var t in transactions)
+            typeof(Transaction).GetProperty("Category")!.SetValue(t, cat);
+
+        var mockSet = CreateMockDbSet(transactions);
+        _contextMock.Setup(x => x.Transactions).Returns(mockSet.Object);
+
+        var query = new GetExpenseReportQuery(userId, start, end, accountA);
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        Assert.True(result.IsValid);
+        var month = Assert.Single(result.Data!.Months);
+        Assert.Equal(100, month.TopCategories[0].TotalAmount);
+    }
+
+    [Fact]
     public async Task Handle_WithNoExpenses_ReturnsEmpty()
     {
         var userId = Guid.NewGuid();
@@ -160,7 +194,7 @@ public class GetExpenseReportQueryHandlerTests
 
         var transactions = new List<Transaction>
         {
-            new("Salary", Money.Create(5000), TransactionType.Income, Guid.NewGuid(), userId, new DateOnly(2026, 5, 5)),
+            new("Salary", Money.Create(5000), TransactionType.Income, Guid.NewGuid(), _accountId, userId, new DateOnly(2026, 5, 5)),
         };
 
         var mockSet = CreateMockDbSet(transactions);
@@ -209,7 +243,7 @@ public class GetExpenseReportQueryHandlerTests
 
         var transactions = categories.SelectMany<Category, Transaction>(c =>
         {
-            var t = new Transaction("Item", Money.Create(100), TransactionType.Expense, c.Id, userId, new DateOnly(2026, 5, 15));
+            var t = new Transaction("Item", Money.Create(100), TransactionType.Expense, c.Id, _accountId, userId, new DateOnly(2026, 5, 15));
             typeof(Transaction).GetProperty("Category")!.SetValue(t, c);
             return [t];
         }).ToList();
@@ -238,12 +272,12 @@ public class GetExpenseReportQueryHandlerTests
 
         var transactions = new List<Transaction>
         {
-            new("Gasolina", Money.Create(100), TransactionType.Expense, catId, userId, new DateOnly(2026, 5, 5)),
-            new("Gasolina", Money.Create(100), TransactionType.Expense, catId, userId, new DateOnly(2026, 5, 10)),
-            new("Gasolina", Money.Create(100), TransactionType.Expense, catId, userId, new DateOnly(2026, 5, 15)),
-            new("Uber", Money.Create(50), TransactionType.Expense, catId, userId, new DateOnly(2026, 5, 20)),
-            new("Uber", Money.Create(50), TransactionType.Expense, catId, userId, new DateOnly(2026, 5, 25)),
-            new("Ônibus", Money.Create(10), TransactionType.Expense, catId, userId, new DateOnly(2026, 5, 1)),
+            new("Gasolina", Money.Create(100), TransactionType.Expense, catId, _accountId, userId, new DateOnly(2026, 5, 5)),
+            new("Gasolina", Money.Create(100), TransactionType.Expense, catId, _accountId, userId, new DateOnly(2026, 5, 10)),
+            new("Gasolina", Money.Create(100), TransactionType.Expense, catId, _accountId, userId, new DateOnly(2026, 5, 15)),
+            new("Uber", Money.Create(50), TransactionType.Expense, catId, _accountId, userId, new DateOnly(2026, 5, 20)),
+            new("Uber", Money.Create(50), TransactionType.Expense, catId, _accountId, userId, new DateOnly(2026, 5, 25)),
+            new("Ônibus", Money.Create(10), TransactionType.Expense, catId, _accountId, userId, new DateOnly(2026, 5, 1)),
         };
 
         foreach (var t in transactions)
