@@ -26,11 +26,12 @@ public class TransactionsController(IMediator mediator) : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50,
         [FromQuery] Guid? categoryId = null,
+        [FromQuery] Guid? accountId = null,
         [FromQuery] string? type = null)
     {
         var userId = GetUserId();
         var result = await _mediator.Send(
-            new GetTransactionsByPeriodQuery(userId, startDate, endDate, page, pageSize, categoryId, type));
+            new GetTransactionsByPeriodQuery(userId, startDate, endDate, page, pageSize, categoryId, accountId, type));
 
         if (!result.IsValid)
             return BadRequest(new { errors = result.Errors });

@@ -7,4 +7,5 @@ namespace Tibar.Application.Queries.Reports;
 public record GetExpenseReportQuery(
     Guid UserId,
     DateOnly StartDate,
-    DateOnly EndDate) : IRequest<Result<ExpenseReportDto>>;
+    DateOnly EndDate,
+    Guid? AccountId = null) : IRequest<Result<ExpenseReportDto>>;

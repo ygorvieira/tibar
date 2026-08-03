@@ -9,4 +9,5 @@ public record GetBalanceByPeriodQuery(
     DateOnly StartDate,
     DateOnly EndDate,
     Guid? CategoryId = null,
+    Guid? AccountId = null,
     string? Type = null) : IRequest<Result<BalanceDto>>;

@@ -21,11 +21,12 @@ public class DashboardController(IMediator mediator) : ControllerBase
         [FromQuery] DateOnly startDate,
         [FromQuery] DateOnly endDate,
         [FromQuery] Guid? categoryId = null,
+        [FromQuery] Guid? accountId = null,
         [FromQuery] string? type = null)
     {
         var userId = GetUserId();
         var result = await _mediator.Send(
-            new GetBalanceByPeriodQuery(userId, startDate, endDate, categoryId, type));
+            new GetBalanceByPeriodQuery(userId, startDate, endDate, categoryId, accountId, type));
 
         if (!result.IsValid)
             return BadRequest(new { errors = result.Errors });
@@ -38,11 +39,12 @@ public class DashboardController(IMediator mediator) : ControllerBase
         [FromQuery] DateOnly startDate,
         [FromQuery] DateOnly endDate,
         [FromQuery] Guid? categoryId = null,
+        [FromQuery] Guid? accountId = null,
         [FromQuery] string? type = null)
     {
         var userId = GetUserId();
         var result = await _mediator.Send(
-            new GetMonthlyBalancesQuery(userId, startDate, endDate, categoryId, type));
+            new GetMonthlyBalancesQuery(userId, startDate, endDate, categoryId, accountId, type));
 
         if (!result.IsValid)
             return BadRequest(new { errors = result.Errors });

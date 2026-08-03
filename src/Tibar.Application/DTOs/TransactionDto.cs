@@ -8,5 +8,7 @@ public record TransactionDto(
     string Type,
     Guid CategoryId,
     string CategoryName,
+    Guid AccountId,
+    string AccountName,
     DateOnly Date,
     DateTime CreatedAt);

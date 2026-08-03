@@ -11,4 +11,5 @@ public record GetTransactionsByPeriodQuery(
     int Page = 1,
     int PageSize = 50,
     Guid? CategoryId = null,
+    Guid? AccountId = null,
     string? Type = null) : IRequest<Result<PagedResult<TransactionDto>>>;
