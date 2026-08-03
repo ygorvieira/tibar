@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Transactions } from './transactions';
 import { TransactionService } from '../../services/transaction.service';
 import { CategoryService } from '../../services/category.service';
+import { AccountService } from '../../services/account.service';
 import { NotificationService } from '../../services/notification.service';
 import { of } from 'rxjs';
 
@@ -14,6 +15,7 @@ describe('Transactions', () => {
       providers: [
         { provide: TransactionService, useValue: { getByPeriod: () => of({ items: [] }) } },
         { provide: CategoryService, useValue: { getAll: () => of([]) } },
+        { provide: AccountService, useValue: { getAll: () => of([]) } },
         { provide: NotificationService, useValue: { success: () => {} } },
       ],
     }).compileComponents();
@@ -30,7 +32,7 @@ describe('Transactions', () => {
 
   it('should close form immediately when no data is filled', () => {
     component.showForm = true;
-    component.form = { description: '', amount: 0, type: 'Expense', categoryId: '', date: '' };
+    component.form = { description: '', amount: 0, type: 'Expense', categoryId: '', accountId: '', date: '' };
 
     component.cancelForm();
 

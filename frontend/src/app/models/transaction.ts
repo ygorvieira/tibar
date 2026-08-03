@@ -13,6 +13,8 @@ export interface Transaction {
   type: 'Income' | 'Expense';
   categoryId: string;
   categoryName: string;
+  accountId: string;
+  accountName: string;
   date: string;
   createdAt: string;
 }
@@ -22,6 +24,7 @@ export interface CreateTransactionRequest {
   amount: number;
   type: 'Income' | 'Expense';
   categoryId: string;
+  accountId: string;
   date: string;
 }
 
@@ -29,5 +32,6 @@ export interface UpdateTransactionRequest {
   description: string;
   amount: number;
   categoryId: string;
+  accountId: string;
   date: string;
 }

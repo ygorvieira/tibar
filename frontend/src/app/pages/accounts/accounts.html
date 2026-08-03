@@ -1,0 +1,60 @@
+<div class="header">
+  <h1>Contas</h1>
+  <button class="btn-primary" (click)="openCreate()">+ Nova</button>
+</div>
+
+@if (showForm) {
+  <div class="form-card">
+    <h3>{{ editingId ? 'Editar' : 'Nova' }} Conta</h3>
+    <form (ngSubmit)="save()">
+      <label>
+        Descrição
+        <input type="text" [(ngModel)]="form.description" name="description" required />
+      </label>
+
+      <label>
+        Tipo
+        <select [(ngModel)]="form.type" name="type">
+          <option value="Checking">Conta Corrente</option>
+          <option value="Investment">Investimento</option>
+          <option value="CreditCard">Cartão de Crédito</option>
+        </select>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Salvar</button>
+        <button type="button" class="btn-secondary" (click)="cancelForm()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (loading()) {
+  <p class="loading">Carregando...</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Descrição</th>
+        <th>Tipo</th>
+        <th>Criada</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (a of accounts; track a.id) {
+        <tr>
+          <td>{{ a.description }}</td>
+          <td>{{ typeLabel(a.type) }}</td>
+          <td>{{ a.createdAt | date }}</td>
+          <td class="actions">
+            <button class="btn-sm" (click)="openEdit(a)">Editar</button>
+            <button class="btn-sm btn-danger" (click)="delete(a.id)">Excluir</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="4" class="empty">Nenhuma conta encontrada.</td></tr>
+      }
+    </tbody>
+  </table>
+}

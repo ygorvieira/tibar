@@ -19,6 +19,15 @@
     </select>
   </label>
   <label>
+    Conta
+    <select [(ngModel)]="filterAccountId">
+      <option value="">Todas</option>
+      @for (a of accounts; track a.id) {
+        <option [value]="a.id">{{ a.description }}</option>
+      }
+    </select>
+  </label>
+  <label>
     Tipo
     <select [(ngModel)]="filterType">
       <option value="">Todos</option>

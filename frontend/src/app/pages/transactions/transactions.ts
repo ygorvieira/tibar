@@ -3,9 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe, CurrencyPipe } from '@angular/common';
 import { TransactionService } from '../../services/transaction.service';
 import { CategoryService } from '../../services/category.service';
+import { AccountService } from '../../services/account.service';
 import { NotificationService } from '../../services/notification.service';
 import { Transaction, CreateTransactionRequest, UpdateTransactionRequest } from '../../models/transaction';
 import { Category } from '../../models/category';
+import { Account } from '../../models/account';
 
 @Component({
   selector: 'app-transactions',
@@ -16,13 +18,16 @@ import { Category } from '../../models/category';
 export class Transactions implements OnInit {
   private readonly transactionSvc = inject(TransactionService);
   private readonly categorySvc = inject(CategoryService);
+  private readonly accountSvc = inject(AccountService);
   private readonly notifications = inject(NotificationService);
 
   transactions: Transaction[] = [];
   categories: Category[] = [];
+  accounts: Account[] = [];
   startDate: string;
   endDate: string;
   filterCategoryId = '';
+  filterAccountId = '';
   filterType = '';
   showForm = false;
   editingId: string | null = null;
@@ -34,6 +39,7 @@ export class Transactions implements OnInit {
     amount: 0,
     type: 'Expense',
     categoryId: '',
+    accountId: '',
     date: ''
   };
 
@@ -46,6 +52,7 @@ export class Transactions implements OnInit {
   ngOnInit(): void {
     this.loadTransactions();
     this.loadCategories();
+    this.loadAccounts();
   }
 
   private loadTransactions(): void {
@@ -54,7 +61,8 @@ export class Transactions implements OnInit {
       this.startDate,
       this.endDate,
       this.filterCategoryId || undefined,
-      this.filterType || undefined
+      this.filterType || undefined,
+      this.filterAccountId || undefined
     ).subscribe({
       next: (res) => { this.transactions = res.items; this.loading.set(false); },
       error: () => this.loading.set(false)
@@ -65,13 +73,17 @@ export class Transactions implements OnInit {
     this.categorySvc.getAll().subscribe(res => this.categories = res);
   }
 
+  private loadAccounts(): void {
+    this.accountSvc.getAll().subscribe(res => this.accounts = res);
+  }
+
   filter(): void {
     this.loadTransactions();
   }
 
   openCreate(): void {
     this.editingId = null;
-    this.form = { description: '', amount: 0, type: 'Expense', categoryId: '', date: '' };
+    this.form = { description: '', amount: 0, type: 'Expense', categoryId: '', accountId: '', date: '' };
     this.showForm = true;
   }
 
@@ -82,6 +94,7 @@ export class Transactions implements OnInit {
       amount: t.amount,
       type: t.type,
       categoryId: t.categoryId,
+      accountId: t.accountId,
       date: t.date
     };
     this.showForm = true;
@@ -102,6 +115,7 @@ export class Transactions implements OnInit {
     return this.form.description.trim() !== ''
       || this.form.amount !== 0
       || this.form.categoryId !== ''
+      || this.form.accountId !== ''
       || this.form.date !== '';
   }
 
@@ -113,6 +127,7 @@ export class Transactions implements OnInit {
         description: this.form.description,
         amount: this.form.amount,
         categoryId: this.form.categoryId,
+        accountId: this.form.accountId,
         date: this.form.date
       };
       this.transactionSvc.update(this.editingId, data).subscribe({
