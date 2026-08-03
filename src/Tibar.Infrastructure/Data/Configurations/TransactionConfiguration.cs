@@ -42,6 +42,11 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
             .HasForeignKey(t => t.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(t => t.Account)
+            .WithMany()
+            .HasForeignKey(t => t.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne<User>()
             .WithMany()
             .HasForeignKey(t => t.UserId)
@@ -49,5 +54,6 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 
         builder.HasIndex(t => new { t.UserId, t.Date });
         builder.HasIndex(t => t.CategoryId);
+        builder.HasIndex(t => t.AccountId);
     }
 }
