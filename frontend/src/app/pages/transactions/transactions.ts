@@ -34,6 +34,9 @@ export class Transactions implements OnInit {
   loading = signal(true);
   saving = signal(false);
 
+  isInstallment = false;
+  installments = 2;
+
   form: CreateTransactionRequest = {
     description: '',
     amount: 0,
@@ -83,12 +86,16 @@ export class Transactions implements OnInit {
 
   openCreate(): void {
     this.editingId = null;
+    this.isInstallment = false;
+    this.installments = 2;
     this.form = { description: '', amount: 0, type: 'Expense', categoryId: '', accountId: '', date: '' };
     this.showForm = true;
   }
 
   openEdit(t: Transaction): void {
     this.editingId = t.id;
+    this.isInstallment = false;
+    this.installments = 2;
     this.form = {
       description: t.description,
       amount: t.amount,
@@ -116,7 +123,8 @@ export class Transactions implements OnInit {
       || this.form.amount !== 0
       || this.form.categoryId !== ''
       || this.form.accountId !== ''
-      || this.form.date !== '';
+      || this.form.date !== ''
+      || this.isInstallment;
   }
 
   save(): void {
@@ -138,7 +146,19 @@ export class Transactions implements OnInit {
         error: () => this.saving.set(false)
       });
     } else {
-      this.transactionSvc.create(this.form).subscribe({
+      const data: CreateTransactionRequest = {
+        description: this.form.description,
+        amount: this.form.amount,
+        type: this.form.type,
+        categoryId: this.form.categoryId,
+        accountId: this.form.accountId,
+        date: this.form.date
+      };
+
+      if (this.isInstallment && this.installments > 1)
+        data.installments = this.installments;
+
+      this.transactionSvc.create(data).subscribe({
         next: () => {
           this.notifications.success('Transação criada.');
           this.resetForm(); this.loadTransactions(); this.saving.set(false);

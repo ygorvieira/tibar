@@ -20,8 +20,8 @@ export class TransactionService {
     return this.http.get<PagedResult<Transaction>>(this.apiUrl, { params });
   }
 
-  create(data: CreateTransactionRequest): Observable<Transaction> {
-    return this.http.post<Transaction>(this.apiUrl, data);
+  create(data: CreateTransactionRequest): Observable<Transaction[]> {
+    return this.http.post<Transaction[]>(this.apiUrl, data);
   }
 
   update(id: string, data: UpdateTransactionRequest): Observable<Transaction> {
