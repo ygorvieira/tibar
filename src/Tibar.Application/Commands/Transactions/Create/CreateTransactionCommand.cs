@@ -11,4 +11,5 @@ public record CreateTransactionCommand(
     Guid CategoryId,
     Guid AccountId,
     Guid UserId,
-    DateOnly Date) : IRequest<Result<TransactionDto>>;
+    DateOnly Date,
+    int? Installments = null) : IRequest<Result<List<TransactionDto>>>;

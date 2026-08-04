@@ -8,12 +8,16 @@ import { of } from 'rxjs';
 
 describe('Transactions', () => {
   let component: Transactions;
+  const createSpy = vi.fn(() => of([]));
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Transactions],
       providers: [
-        { provide: TransactionService, useValue: { getByPeriod: () => of({ items: [] }) } },
+        {
+          provide: TransactionService,
+          useValue: { getByPeriod: () => of({ items: [] }), create: createSpy },
+        },
         { provide: CategoryService, useValue: { getAll: () => of([]) } },
         { provide: AccountService, useValue: { getAll: () => of([]) } },
         { provide: NotificationService, useValue: { success: () => {} } },
@@ -93,5 +97,45 @@ describe('Transactions', () => {
 
     expect(component.showForm).toBe(false);
     expect(component.editingId).toBeNull();
+  });
+
+  it('should prompt confirm when installment mode is on', () => {
+    component.showForm = true;
+    component.isInstallment = true;
+    const spy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    component.cancelForm();
+
+    expect(spy).toHaveBeenCalled();
+    expect(component.showForm).toBe(true);
+  });
+
+  it('should send installments count on create when installment mode is on', () => {
+    createSpy.mockClear();
+    component.openCreate();
+    component.form = {
+      description: 'Laptop', amount: 100, type: 'Expense',
+      categoryId: 'cat', accountId: 'acc', date: '2026-01-01',
+    };
+    component.isInstallment = true;
+    component.installments = 5;
+
+    component.save();
+
+    expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ installments: 5 }));
+  });
+
+  it('should not send installments when installment mode is off', () => {
+    createSpy.mockClear();
+    component.openCreate();
+    component.form = {
+      description: 'Lunch', amount: 20, type: 'Expense',
+      categoryId: 'cat', accountId: 'acc', date: '2026-01-01',
+    };
+    component.isInstallment = false;
+
+    component.save();
+
+    expect(createSpy).toHaveBeenCalledWith(expect.not.objectContaining({ installments: expect.anything() }));
   });
 });

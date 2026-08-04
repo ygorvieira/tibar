@@ -26,5 +26,12 @@ public class CreateTransactionCommandValidator : AbstractValidator<CreateTransac
 
         RuleFor(x => x.Date)
             .NotEmpty().WithMessage("Data é obrigatória.");
+
+        When(x => x.Installments.HasValue, () =>
+        {
+            RuleFor(x => x.Installments)
+                .GreaterThanOrEqualTo(2).WithMessage("Quantidade de parcelas deve ser no mínimo 2.")
+                .LessThanOrEqualTo(120).WithMessage("Quantidade de parcelas não deve exceder 120.");
+        });
     }
 }

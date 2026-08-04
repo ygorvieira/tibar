@@ -16,6 +16,7 @@ export interface Transaction {
   accountId: string;
   accountName: string;
   date: string;
+  installmentId: string | null;
   createdAt: string;
 }
 
@@ -26,6 +27,7 @@ export interface CreateTransactionRequest {
   categoryId: string;
   accountId: string;
   date: string;
+  installments?: number;
 }
 
 export interface UpdateTransactionRequest {

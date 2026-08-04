@@ -49,6 +49,13 @@
     gap: 0.25rem;
     font-size: 0.875rem;
     color: #555;
+
+    &.checkbox {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.5rem;
+      align-self: end;
+    }
   }
 
   input, select {
@@ -111,6 +118,17 @@ table {
 
   &.income { background: #e8f5e9; color: #2e7d32; }
   &.expense { background: #fdecea; color: #c62828; }
+}
+
+.badge-installment {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: #fff3e0;
+  color: #e65100;
 }
 
 .btn-primary {

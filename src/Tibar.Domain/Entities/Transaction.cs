@@ -14,6 +14,7 @@ public class Transaction : BaseEntity
     public Account Account { get; private set; } = null!;
     public Guid UserId { get; private set; }
     public DateOnly Date { get; private set; }
+    public Guid? InstallmentId { get; private set; }
 
     private Transaction() { }
 
@@ -24,7 +25,8 @@ public class Transaction : BaseEntity
         Guid categoryId,
         Guid accountId,
         Guid userId,
-        DateOnly date)
+        DateOnly date,
+        Guid? installmentId = null)
     {
         Description = description;
         Amount = amount;
@@ -33,6 +35,7 @@ public class Transaction : BaseEntity
         AccountId = accountId;
         UserId = userId;
         Date = date;
+        InstallmentId = installmentId;
     }
 
     public void UpdateDescription(string description)

@@ -83,6 +83,18 @@
         </select>
       </label>
 
+      <label class="checkbox">
+        <input type="checkbox" [(ngModel)]="isInstallment" name="isInstallment" [disabled]="!!editingId" />
+        Parcelado
+      </label>
+
+      @if (isInstallment) {
+        <label>
+          Quantidade de parcelas
+          <input type="number" min="2" max="120" [(ngModel)]="installments" name="installments" required />
+        </label>
+      }
+
       <label>
         Data
         <input type="date" [(ngModel)]="form.date" name="date" required />
@@ -119,7 +131,12 @@
           <td>{{ t.date | date:'dd/MM/yyyy' }}</td>
           <td>{{ t.description }}</td>
           <td>{{ t.categoryName }}</td>
-          <td>{{ t.accountName }}</td>
+          <td>
+            {{ t.accountName }}
+            @if (t.installmentId) {
+              <span class="badge-installment">Parcelado</span>
+            }
+          </td>
           <td>
             <span class="badge" [class.income]="t.type === 'Income'" [class.expense]="t.type === 'Expense'">
               {{ t.type === 'Income' ? 'Receita' : 'Despesa' }}

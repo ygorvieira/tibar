@@ -38,7 +38,7 @@ public class TransactionsControllerTests
         var transactions = new List<TransactionDto>
         {
             new(Guid.NewGuid(), "Test", 100, "BRL", "Expense", Guid.NewGuid(), "Food",
-                Guid.NewGuid(), "Bradesco", new DateOnly(2026, 5, 27), DateTime.UtcNow)
+                Guid.NewGuid(), "Bradesco", new DateOnly(2026, 5, 27), null, DateTime.UtcNow)
         };
 
         var pagedResult = new PagedResult<TransactionDto>(transactions, transactions.Count, 1, 50);
@@ -57,19 +57,22 @@ public class TransactionsControllerTests
     [Fact]
     public async Task Create_ValidCommand_ReturnsOk()
     {
-        var dto = new TransactionDto(Guid.NewGuid(), "New", 50, "BRL", "Expense",
-            Guid.NewGuid(), "Food", Guid.NewGuid(), "Bradesco", new DateOnly(2026, 5, 27), DateTime.UtcNow);
+        var dtos = new List<TransactionDto>
+        {
+            new(Guid.NewGuid(), "New", 50, "BRL", "Expense",
+                Guid.NewGuid(), "Food", Guid.NewGuid(), "Bradesco", new DateOnly(2026, 5, 27), null, DateTime.UtcNow)
+        };
 
         _mediatorMock.Setup(m => m.Send(
                 It.IsAny<CreateTransactionCommand>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(dto));
+            .ReturnsAsync(Result.Success(dtos));
 
         var command = new CreateTransactionCommand("New", 50, "Expense", Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 27));
         var result = await _controller.Create(command);
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(dto, ok.Value);
+        Assert.Equal(dtos, ok.Value);
     }
 
     [Fact]
@@ -78,7 +81,7 @@ public class TransactionsControllerTests
         _mediatorMock.Setup(m => m.Send(
                 It.Is<CreateTransactionCommand>(c => c.UserId == _userId),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Failure<TransactionDto>("error"));
+            .ReturnsAsync(Result.Failure<List<TransactionDto>>("error"));
 
         var command = new CreateTransactionCommand("New", 50, "Expense", Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 27));
         await _controller.Create(command);
@@ -92,7 +95,7 @@ public class TransactionsControllerTests
     public async Task Update_ValidCommand_ReturnsOk()
     {
         var dto = new TransactionDto(Guid.NewGuid(), "Updated", 75, "BRL", "Expense",
-            Guid.NewGuid(), "Food", Guid.NewGuid(), "Bradesco", new DateOnly(2026, 5, 27), DateTime.UtcNow);
+            Guid.NewGuid(), "Food", Guid.NewGuid(), "Bradesco", new DateOnly(2026, 5, 27), null, DateTime.UtcNow);
 
         _mediatorMock.Setup(m => m.Send(
                 It.IsAny<UpdateTransactionCommand>(),
