@@ -11,4 +11,5 @@ public record TransactionDto(
     Guid AccountId,
     string AccountName,
     DateOnly Date,
+    Guid? InstallmentId,
     DateTime CreatedAt);

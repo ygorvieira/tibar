@@ -43,6 +43,7 @@ public class GetTransactionsByPeriodQueryHandler(
                 t.AccountId,
                 t.Account.Description,
                 t.Date,
+                t.InstallmentId,
                 t.CreatedAt))
             .ToListAsync(cancellationToken);
 

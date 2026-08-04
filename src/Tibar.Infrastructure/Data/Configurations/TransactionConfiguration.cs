@@ -55,5 +55,6 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.HasIndex(t => new { t.UserId, t.Date });
         builder.HasIndex(t => t.CategoryId);
         builder.HasIndex(t => t.AccountId);
+        builder.HasIndex(t => t.InstallmentId);
     }
 }

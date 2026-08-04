@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Tibar.Application.Common;
 using Tibar.Application.Interfaces;
 
@@ -15,7 +16,19 @@ public class DeleteTransactionCommandHandler(
         if (transaction is null || transaction.UserId != request.UserId)
             return Result.Failure<Unit>("Transação não encontrada.");
 
-        context.Transactions.Remove(transaction);
+        if (transaction.InstallmentId.HasValue)
+        {
+            var group = await context.Transactions
+                .Where(t => t.UserId == request.UserId && t.InstallmentId == transaction.InstallmentId)
+                .ToListAsync(cancellationToken);
+
+            context.Transactions.RemoveRange(group);
+        }
+        else
+        {
+            context.Transactions.Remove(transaction);
+        }
+
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success(Unit.Value);

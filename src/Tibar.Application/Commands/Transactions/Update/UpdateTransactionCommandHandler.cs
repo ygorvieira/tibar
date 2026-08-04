@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Tibar.Application.Common;
 using Tibar.Application.Interfaces;
 using Tibar.Domain.Exceptions;
@@ -39,10 +40,20 @@ public class UpdateTransactionCommandHandler(
             return Result.Failure<DTOs.TransactionDto>(ex.Message);
         }
 
-        transaction.UpdateDescription(request.Description);
-        transaction.UpdateAmount(amount);
-        transaction.UpdateCategory(request.CategoryId);
-        transaction.UpdateAccount(request.AccountId);
+        var targets = transaction.InstallmentId.HasValue
+            ? await context.Transactions
+                .Where(t => t.UserId == request.UserId && t.InstallmentId == transaction.InstallmentId)
+                .ToListAsync(cancellationToken)
+            : [transaction];
+
+        foreach (var target in targets)
+        {
+            target.UpdateDescription(request.Description);
+            target.UpdateAmount(amount);
+            target.UpdateCategory(request.CategoryId);
+            target.UpdateAccount(request.AccountId);
+        }
+
         transaction.UpdateDate(request.Date);
 
         await context.SaveChangesAsync(cancellationToken);
@@ -58,6 +69,7 @@ public class UpdateTransactionCommandHandler(
             transaction.AccountId,
             account.Description,
             transaction.Date,
+            transaction.InstallmentId,
             transaction.CreatedAt));
     }
 }
