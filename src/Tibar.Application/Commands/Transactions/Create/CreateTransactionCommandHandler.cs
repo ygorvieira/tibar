@@ -23,6 +23,12 @@ public class CreateTransactionCommandHandler(
         if (category is null || category.UserId != request.UserId)
             return Result.Failure<DTOs.TransactionDto>("Categoria não encontrada.");
 
+        var account = await context.Accounts
+            .FindAsync(new object[] { request.AccountId }, cancellationToken);
+
+        if (account is null || account.UserId != request.UserId)
+            return Result.Failure<DTOs.TransactionDto>("Conta não encontrada.");
+
         var amountResult = CreateAmount(request.Amount);
         if (!amountResult.IsValid)
             return Result.Failure<DTOs.TransactionDto>(amountResult.Errors);
@@ -32,13 +38,14 @@ public class CreateTransactionCommandHandler(
             amountResult.Data!,
             typeResult.Data!,
             request.CategoryId,
+            request.AccountId,
             request.UserId,
             request.Date);
 
         context.Transactions.Add(transaction);
         await context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(MapToDto(transaction, category.Name));
+        return Result.Success(MapToDto(transaction, category.Name, account.Description));
     }
 
     private static Result<TransactionType> ParseType(string type)
@@ -63,7 +70,7 @@ public class CreateTransactionCommandHandler(
         }
     }
 
-    private static DTOs.TransactionDto MapToDto(Transaction t, string categoryName)
+    private static DTOs.TransactionDto MapToDto(Transaction t, string categoryName, string accountName)
         => new(
             t.Id,
             t.Description,
@@ -72,6 +79,8 @@ public class CreateTransactionCommandHandler(
             t.Type.ToString(),
             t.CategoryId,
             categoryName,
+            t.AccountId,
+            accountName,
             t.Date,
             t.CreatedAt);
 }

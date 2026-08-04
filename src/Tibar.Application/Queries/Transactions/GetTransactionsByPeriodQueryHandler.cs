@@ -20,6 +20,9 @@ public class GetTransactionsByPeriodQueryHandler(
         if (request.CategoryId.HasValue)
             query = query.Where(t => t.CategoryId == request.CategoryId.Value);
 
+        if (request.AccountId.HasValue)
+            query = query.Where(t => t.AccountId == request.AccountId.Value);
+
         if (!string.IsNullOrWhiteSpace(request.Type))
             query = query.Where(t => t.Type.ToString() == request.Type);
 
@@ -37,6 +40,8 @@ public class GetTransactionsByPeriodQueryHandler(
                 t.Type.ToString(),
                 t.CategoryId,
                 t.Category.Name,
+                t.AccountId,
+                t.Account.Description,
                 t.Date,
                 t.CreatedAt))
             .ToListAsync(cancellationToken);

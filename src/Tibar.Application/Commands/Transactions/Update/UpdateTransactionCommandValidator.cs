@@ -16,6 +16,9 @@ public class UpdateTransactionCommandValidator : AbstractValidator<UpdateTransac
         RuleFor(x => x.CategoryId)
             .NotEmpty().WithMessage("Categoria é obrigatória.");
 
+        RuleFor(x => x.AccountId)
+            .NotEmpty().WithMessage("Conta é obrigatória.");
+
         RuleFor(x => x.Date)
             .NotEmpty().WithMessage("Data é obrigatória.");
     }

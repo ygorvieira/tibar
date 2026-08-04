@@ -152,6 +152,42 @@ namespace Tibar.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Tibar.Domain.Entities.Account", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Description")
+                        .IsUnique();
+
+                    b.ToTable("Accounts", (string)null);
+                });
+
             modelBuilder.Entity("Tibar.Domain.Entities.Category", b =>
                 {
                     b.Property<Guid>("Id")
@@ -194,6 +230,9 @@ namespace Tibar.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uuid");
 
@@ -223,6 +262,8 @@ namespace Tibar.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("CategoryId");
 
@@ -384,6 +425,15 @@ namespace Tibar.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Tibar.Domain.Entities.Account", b =>
+                {
+                    b.HasOne("Tibar.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Tibar.Domain.Entities.Category", b =>
                 {
                     b.HasOne("Tibar.Domain.Entities.User", null)
@@ -395,6 +445,12 @@ namespace Tibar.Infrastructure.Migrations
 
             modelBuilder.Entity("Tibar.Domain.Entities.Transaction", b =>
                 {
+                    b.HasOne("Tibar.Domain.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Tibar.Domain.Entities.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
@@ -430,6 +486,8 @@ namespace Tibar.Infrastructure.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TransactionId");
                         });
+
+                    b.Navigation("Account");
 
                     b.Navigation("Amount")
                         .IsRequired();

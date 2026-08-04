@@ -23,6 +23,12 @@ public class UpdateTransactionCommandHandler(
         if (category is null || category.UserId != request.UserId)
             return Result.Failure<DTOs.TransactionDto>("Categoria não encontrada.");
 
+        var account = await context.Accounts
+            .FindAsync(new object[] { request.AccountId }, cancellationToken);
+
+        if (account is null || account.UserId != request.UserId)
+            return Result.Failure<DTOs.TransactionDto>("Conta não encontrada.");
+
         Money amount;
         try
         {
@@ -36,6 +42,7 @@ public class UpdateTransactionCommandHandler(
         transaction.UpdateDescription(request.Description);
         transaction.UpdateAmount(amount);
         transaction.UpdateCategory(request.CategoryId);
+        transaction.UpdateAccount(request.AccountId);
         transaction.UpdateDate(request.Date);
 
         await context.SaveChangesAsync(cancellationToken);
@@ -48,6 +55,8 @@ public class UpdateTransactionCommandHandler(
             transaction.Type.ToString(),
             transaction.CategoryId,
             category.Name,
+            transaction.AccountId,
+            account.Description,
             transaction.Date,
             transaction.CreatedAt));
     }

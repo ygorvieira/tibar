@@ -10,6 +10,8 @@ public class Transaction : BaseEntity
     public TransactionType Type { get; private set; }
     public Guid CategoryId { get; private set; }
     public Category Category { get; private set; } = null!;
+    public Guid AccountId { get; private set; }
+    public Account Account { get; private set; } = null!;
     public Guid UserId { get; private set; }
     public DateOnly Date { get; private set; }
 
@@ -20,6 +22,7 @@ public class Transaction : BaseEntity
         Money amount,
         TransactionType type,
         Guid categoryId,
+        Guid accountId,
         Guid userId,
         DateOnly date)
     {
@@ -27,6 +30,7 @@ public class Transaction : BaseEntity
         Amount = amount;
         Type = type;
         CategoryId = categoryId;
+        AccountId = accountId;
         UserId = userId;
         Date = date;
     }
@@ -52,6 +56,12 @@ public class Transaction : BaseEntity
     public void UpdateCategory(Guid categoryId)
     {
         CategoryId = categoryId;
+        MarkAsUpdated();
+    }
+
+    public void UpdateAccount(Guid accountId)
+    {
+        AccountId = accountId;
         MarkAsUpdated();
     }
 }

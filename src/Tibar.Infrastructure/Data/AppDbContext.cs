@@ -12,6 +12,7 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 {
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Account> Accounts => Set<Account>();
     public new DbSet<User> Users => Set<User>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
@@ -24,6 +25,7 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 
         builder.ApplyConfiguration(new TransactionConfiguration());
         builder.ApplyConfiguration(new CategoryConfiguration());
+        builder.ApplyConfiguration(new AccountConfiguration());
         builder.ApplyConfiguration(new UserConfiguration());
     }
 

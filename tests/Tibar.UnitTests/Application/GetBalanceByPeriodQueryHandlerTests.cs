@@ -14,6 +14,7 @@ public class GetBalanceByPeriodQueryHandlerTests
 {
     private readonly Mock<IApplicationDbContext> _contextMock;
     private readonly GetBalanceByPeriodQueryHandler _handler;
+    private readonly Guid _accountId = Guid.NewGuid();
 
     public GetBalanceByPeriodQueryHandlerTests()
     {
@@ -45,10 +46,14 @@ public class GetBalanceByPeriodQueryHandlerTests
 
     private class TestAsyncEnumerable<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
     {
-        public TestAsyncEnumerable(Expression expression) : base(expression) { }
+        private readonly IQueryProvider _provider;
+        public TestAsyncEnumerable(Expression expression) : base(expression)
+        {
+            _provider = new TestAsyncQueryProvider<T>(this.AsEnumerable().AsQueryable().Provider);
+        }
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new TestAsyncEnumerator<T>(this.AsEnumerable().GetEnumerator());
-        IQueryProvider IQueryable.Provider => new TestAsyncQueryProvider<T>(this.AsQueryable().Provider);
+        IQueryProvider IQueryable.Provider => _provider;
     }
 
     private class TestAsyncEnumerator<T> : IAsyncEnumerator<T>
@@ -69,10 +74,10 @@ public class GetBalanceByPeriodQueryHandlerTests
 
         var transactions = new List<Transaction>
         {
-            new("Salary", Money.Create(5000), TransactionType.Income, Guid.NewGuid(), userId, new DateOnly(2026, 5, 5)),
-            new("Rent", Money.Create(1500), TransactionType.Expense, Guid.NewGuid(), userId, new DateOnly(2026, 5, 5)),
-            new("Food", Money.Create(300), TransactionType.Expense, Guid.NewGuid(), userId, new DateOnly(2026, 5, 10)),
-            new("Freelance", Money.Create(1000), TransactionType.Income, Guid.NewGuid(), userId, new DateOnly(2026, 5, 15)),
+            new("Salary", Money.Create(5000), TransactionType.Income, Guid.NewGuid(), _accountId, userId, new DateOnly(2026, 5, 5)),
+            new("Rent", Money.Create(1500), TransactionType.Expense, Guid.NewGuid(), _accountId, userId, new DateOnly(2026, 5, 5)),
+            new("Food", Money.Create(300), TransactionType.Expense, Guid.NewGuid(), _accountId, userId, new DateOnly(2026, 5, 10)),
+            new("Freelance", Money.Create(1000), TransactionType.Income, Guid.NewGuid(), _accountId, userId, new DateOnly(2026, 5, 15)),
         };
 
         var mockSet = CreateMockDbSet(transactions);
@@ -120,14 +125,40 @@ public class GetBalanceByPeriodQueryHandlerTests
 
         var transactions = new List<Transaction>
         {
-            new("Salary", Money.Create(5000), TransactionType.Income, Guid.NewGuid(), userA, new DateOnly(2026, 5, 5)),
-            new("Salary", Money.Create(3000), TransactionType.Income, Guid.NewGuid(), userB, new DateOnly(2026, 5, 5)),
+            new("Salary", Money.Create(5000), TransactionType.Income, Guid.NewGuid(), _accountId, userA, new DateOnly(2026, 5, 5)),
+            new("Salary", Money.Create(3000), TransactionType.Income, Guid.NewGuid(), _accountId, userB, new DateOnly(2026, 5, 5)),
         };
 
         var mockSet = CreateMockDbSet(transactions);
         _contextMock.Setup(x => x.Transactions).Returns(mockSet.Object);
 
         var query = new GetBalanceByPeriodQuery(userA, start, end);
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        Assert.True(result.IsValid);
+        Assert.NotNull(result.Data);
+        Assert.Equal(5000, result.Data.TotalIncome);
+    }
+
+    [Fact]
+    public async Task Handle_FiltersByAccount_ExcludesOtherAccounts()
+    {
+        var userId = Guid.NewGuid();
+        var accountA = Guid.NewGuid();
+        var accountB = Guid.NewGuid();
+        var start = new DateOnly(2026, 5, 1);
+        var end = new DateOnly(2026, 5, 31);
+
+        var transactions = new List<Transaction>
+        {
+            new("Salary", Money.Create(5000), TransactionType.Income, Guid.NewGuid(), accountA, userId, new DateOnly(2026, 5, 5)),
+            new("Salary", Money.Create(3000), TransactionType.Income, Guid.NewGuid(), accountB, userId, new DateOnly(2026, 5, 5)),
+        };
+
+        var mockSet = CreateMockDbSet(transactions);
+        _contextMock.Setup(x => x.Transactions).Returns(mockSet.Object);
+
+        var query = new GetBalanceByPeriodQuery(userId, start, end, AccountId: accountA);
         var result = await _handler.Handle(query, CancellationToken.None);
 
         Assert.True(result.IsValid);
@@ -144,8 +175,8 @@ public class GetBalanceByPeriodQueryHandlerTests
 
         var transactions = new List<Transaction>
         {
-            new("In", Money.Create(100), TransactionType.Income, Guid.NewGuid(), userId, new DateOnly(2026, 5, 15)),
-            new("Outside", Money.Create(100), TransactionType.Income, Guid.NewGuid(), userId, new DateOnly(2026, 6, 15)),
+            new("In", Money.Create(100), TransactionType.Income, Guid.NewGuid(), _accountId, userId, new DateOnly(2026, 5, 15)),
+            new("Outside", Money.Create(100), TransactionType.Income, Guid.NewGuid(), _accountId, userId, new DateOnly(2026, 6, 15)),
         };
 
         var mockSet = CreateMockDbSet(transactions);

@@ -25,8 +25,10 @@ public class CreateTransactionCommandHandlerTests
     public async Task Handle_ValidCommand_ReturnsSuccessWithDto()
     {
         var categoryId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
         var userId = Guid.NewGuid();
         var category = new Category("Food", TransactionType.Expense, userId);
+        var account = new Account("Bradesco", AccountType.Checking, userId);
 
         var categories = new List<Category> { category }.AsQueryable();
         var mockCategories = new Mock<Microsoft.EntityFrameworkCore.DbSet<Category>>();
@@ -37,12 +39,22 @@ public class CreateTransactionCommandHandlerTests
         mockCategories.Setup(m => m.FindAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(category);
 
+        var accounts = new List<Account> { account }.AsQueryable();
+        var mockAccounts = new Mock<Microsoft.EntityFrameworkCore.DbSet<Account>>();
+        mockAccounts.As<IQueryable<Account>>().Setup(m => m.Provider).Returns(accounts.Provider);
+        mockAccounts.As<IQueryable<Account>>().Setup(m => m.Expression).Returns(accounts.Expression);
+        mockAccounts.As<IQueryable<Account>>().Setup(m => m.ElementType).Returns(accounts.ElementType);
+        mockAccounts.As<IQueryable<Account>>().Setup(m => m.GetEnumerator()).Returns(accounts.GetEnumerator());
+        mockAccounts.Setup(m => m.FindAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(account);
+
         _contextMock.Setup(x => x.Categories).Returns(mockCategories.Object);
+        _contextMock.Setup(x => x.Accounts).Returns(mockAccounts.Object);
         _contextMock.Setup(x => x.Transactions).Returns(new Mock<Microsoft.EntityFrameworkCore.DbSet<Transaction>>().Object);
         _contextMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var command = new CreateTransactionCommand(
-            "Lunch", 50, "Expense", categoryId, userId, new DateOnly(2026, 5, 27));
+            "Lunch", 50, "Expense", categoryId, accountId, userId, new DateOnly(2026, 5, 27));
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -57,7 +69,7 @@ public class CreateTransactionCommandHandlerTests
     public async Task Handle_InvalidType_ReturnsFailure()
     {
         var command = new CreateTransactionCommand(
-            "Test", 50, "InvalidType", Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 27));
+            "Test", 50, "InvalidType", Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 27));
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -77,7 +89,7 @@ public class CreateTransactionCommandHandlerTests
         _contextMock.Setup(x => x.Categories).Returns(mockCategories.Object);
 
         var command = new CreateTransactionCommand(
-            "Test", 50, "Expense", categoryId, Guid.NewGuid(), new DateOnly(2026, 5, 27));
+            "Test", 50, "Expense", categoryId, Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 27));
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -86,9 +98,10 @@ public class CreateTransactionCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_NegativeAmount_ReturnsFailure()
+    public async Task Handle_NonExistentAccount_ReturnsFailure()
     {
         var categoryId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
         var userId = Guid.NewGuid();
         var category = new Category("Food", TransactionType.Expense, userId);
 
@@ -96,10 +109,44 @@ public class CreateTransactionCommandHandlerTests
         mockCategories.Setup(m => m.FindAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(category);
 
+        var mockAccounts = new Mock<Microsoft.EntityFrameworkCore.DbSet<Account>>();
+        mockAccounts.Setup(m => m.FindAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Account?)null);
+
         _contextMock.Setup(x => x.Categories).Returns(mockCategories.Object);
+        _contextMock.Setup(x => x.Accounts).Returns(mockAccounts.Object);
 
         var command = new CreateTransactionCommand(
-            "Test", -10, "Expense", categoryId, userId, new DateOnly(2026, 5, 27));
+            "Test", 50, "Expense", categoryId, accountId, userId, new DateOnly(2026, 5, 27));
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsValid);
+        Assert.Equal("Conta não encontrada.", result.Errors[0]);
+    }
+
+    [Fact]
+    public async Task Handle_NegativeAmount_ReturnsFailure()
+    {
+        var categoryId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var category = new Category("Food", TransactionType.Expense, userId);
+        var account = new Account("Bradesco", AccountType.Checking, userId);
+
+        var mockCategories = new Mock<Microsoft.EntityFrameworkCore.DbSet<Category>>();
+        mockCategories.Setup(m => m.FindAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(category);
+
+        var mockAccounts = new Mock<Microsoft.EntityFrameworkCore.DbSet<Account>>();
+        mockAccounts.Setup(m => m.FindAsync(It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(account);
+
+        _contextMock.Setup(x => x.Categories).Returns(mockCategories.Object);
+        _contextMock.Setup(x => x.Accounts).Returns(mockAccounts.Object);
+
+        var command = new CreateTransactionCommand(
+            "Test", -10, "Expense", categoryId, accountId, userId, new DateOnly(2026, 5, 27));
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

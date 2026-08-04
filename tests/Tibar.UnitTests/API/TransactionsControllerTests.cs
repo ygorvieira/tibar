@@ -38,7 +38,7 @@ public class TransactionsControllerTests
         var transactions = new List<TransactionDto>
         {
             new(Guid.NewGuid(), "Test", 100, "BRL", "Expense", Guid.NewGuid(), "Food",
-                new DateOnly(2026, 5, 27), DateTime.UtcNow)
+                Guid.NewGuid(), "Bradesco", new DateOnly(2026, 5, 27), DateTime.UtcNow)
         };
 
         var pagedResult = new PagedResult<TransactionDto>(transactions, transactions.Count, 1, 50);
@@ -58,14 +58,14 @@ public class TransactionsControllerTests
     public async Task Create_ValidCommand_ReturnsOk()
     {
         var dto = new TransactionDto(Guid.NewGuid(), "New", 50, "BRL", "Expense",
-            Guid.NewGuid(), "Food", new DateOnly(2026, 5, 27), DateTime.UtcNow);
+            Guid.NewGuid(), "Food", Guid.NewGuid(), "Bradesco", new DateOnly(2026, 5, 27), DateTime.UtcNow);
 
         _mediatorMock.Setup(m => m.Send(
                 It.IsAny<CreateTransactionCommand>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(dto));
 
-        var command = new CreateTransactionCommand("New", 50, "Expense", Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 27));
+        var command = new CreateTransactionCommand("New", 50, "Expense", Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 27));
         var result = await _controller.Create(command);
 
         var ok = Assert.IsType<OkObjectResult>(result);
@@ -80,7 +80,7 @@ public class TransactionsControllerTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure<TransactionDto>("error"));
 
-        var command = new CreateTransactionCommand("New", 50, "Expense", Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 27));
+        var command = new CreateTransactionCommand("New", 50, "Expense", Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 27));
         await _controller.Create(command);
 
         _mediatorMock.Verify(m => m.Send(
@@ -92,14 +92,14 @@ public class TransactionsControllerTests
     public async Task Update_ValidCommand_ReturnsOk()
     {
         var dto = new TransactionDto(Guid.NewGuid(), "Updated", 75, "BRL", "Expense",
-            Guid.NewGuid(), "Food", new DateOnly(2026, 5, 27), DateTime.UtcNow);
+            Guid.NewGuid(), "Food", Guid.NewGuid(), "Bradesco", new DateOnly(2026, 5, 27), DateTime.UtcNow);
 
         _mediatorMock.Setup(m => m.Send(
                 It.IsAny<UpdateTransactionCommand>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(dto));
 
-        var command = new UpdateTransactionCommand(Guid.NewGuid(), "Updated", 75, Guid.NewGuid(), _userId, new DateOnly(2026, 5, 27));
+        var command = new UpdateTransactionCommand(Guid.NewGuid(), "Updated", 75, Guid.NewGuid(), Guid.NewGuid(), _userId, new DateOnly(2026, 5, 27));
         var result = await _controller.Update(Guid.NewGuid(), command);
 
         var ok = Assert.IsType<OkObjectResult>(result);

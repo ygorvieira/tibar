@@ -13,11 +13,16 @@ public class GetExpenseReportQueryHandler(
     public async Task<Result<DTOs.ExpenseReportDto>> Handle(
         GetExpenseReportQuery request, CancellationToken cancellationToken)
     {
-        var expenses = await context.Transactions
+        var expenses = context.Transactions
             .Where(t => t.UserId == request.UserId
                 && t.Type == TransactionType.Expense
                 && t.Date >= request.StartDate
-                && t.Date <= request.EndDate)
+                && t.Date <= request.EndDate);
+
+        if (request.AccountId.HasValue)
+            expenses = expenses.Where(t => t.AccountId == request.AccountId.Value);
+
+        var result = await expenses
             .Select(t => new
             {
                 t.Id,
@@ -30,7 +35,7 @@ public class GetExpenseReportQueryHandler(
             })
             .ToListAsync(cancellationToken);
 
-        var monthly = expenses
+        var monthly = result
             .GroupBy(t => new { t.Year, t.Month })
             .OrderByDescending(g => g.Key.Year)
             .ThenByDescending(g => g.Key.Month)

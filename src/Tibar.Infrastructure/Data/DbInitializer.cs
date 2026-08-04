@@ -20,7 +20,10 @@ public static class DbInitializer
 
         var userId = await EnsureAdminUserAsync(context, userManager, adminEmail, adminPassword);
         if (userId.HasValue)
+        {
             await EnsureCategoriesAsync(context, userId.Value, logger);
+            await EnsureDefaultAccountAsync(context, userId.Value, logger);
+        }
     }
 
     private static async Task<Guid?> EnsureAdminUserAsync(
@@ -83,5 +86,18 @@ public static class DbInitializer
         context.Categories.AddRange(categories);
         await context.SaveChangesAsync();
         logger.LogInformation("Created {Count} categories for user {UserId}", categories.Count, userId);
+    }
+
+    private static async Task EnsureDefaultAccountAsync(AppDbContext context, Guid userId, ILogger logger)
+    {
+        if (await context.Accounts.AnyAsync(a => a.UserId == userId))
+        {
+            logger.LogInformation("Accounts already exist for user {UserId}", userId);
+            return;
+        }
+
+        context.Accounts.Add(new Account("Bradesco", AccountType.Checking, userId));
+        await context.SaveChangesAsync();
+        logger.LogInformation("Created default account for user {UserId}", userId);
     }
 }
