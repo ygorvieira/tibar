@@ -651,6 +651,11 @@
           "date": {
             "type": "string",
             "format": "date"
+          },
+          "installments": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
