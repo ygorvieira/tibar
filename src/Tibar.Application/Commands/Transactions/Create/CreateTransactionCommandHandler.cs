@@ -41,7 +41,7 @@ public class CreateTransactionCommandHandler(
         var transactions = dates
             .Select(date => new Transaction(
                 request.Description,
-                amountResult.Data!,
+                amountResult.Data! with { },
                 typeResult.Data!,
                 request.CategoryId,
                 request.AccountId,
