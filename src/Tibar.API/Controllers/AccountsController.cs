@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Tibar.Application.Commands.Accounts.Create;
 using Tibar.Application.Commands.Accounts.Delete;
 using Tibar.Application.Commands.Accounts.Update;
+using Tibar.Application.Common;
+using Tibar.Application.DTOs;
 using Tibar.Application.Queries.Accounts;
 
 namespace Tibar.API.Controllers;
@@ -20,11 +22,15 @@ public class AccountsController(IMediator mediator) : ControllerBase
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [ProducesResponseType(typeof(PagedResult<AccountDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
         var userId = GetUserId();
         var result = await _mediator.Send(
-            new GetAccountsQuery(userId));
+            new GetAccountsQuery(userId, page, pageSize));
 
         if (!result.IsValid)
             return BadRequest(new { errors = result.Errors });

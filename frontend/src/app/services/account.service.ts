@@ -1,15 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Account, CreateAccountRequest, UpdateAccountRequest } from '../models/account';
+import { PagedResult } from '../models/transaction';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = '/api/accounts';
 
-  getAll(): Observable<Account[]> {
-    return this.http.get<Account[]>(this.apiUrl);
+  getAll(page = 1, pageSize = 50): Observable<PagedResult<Account>> {
+    const params = new HttpParams().set('page', page).set('pageSize', pageSize);
+    return this.http.get<PagedResult<Account>>(this.apiUrl, { params });
   }
 
   create(data: CreateAccountRequest): Observable<Account> {

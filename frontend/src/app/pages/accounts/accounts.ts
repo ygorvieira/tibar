@@ -19,6 +19,9 @@ export class Accounts implements OnInit {
   showForm = false;
   editingId: string | null = null;
   loading = signal(true);
+  page = 1;
+  pageSize = 50;
+  totalCount = 0;
 
   form: CreateAccountRequest = { description: '', type: 'Checking' };
 
@@ -28,10 +31,34 @@ export class Accounts implements OnInit {
 
   private load(): void {
     this.loading.set(true);
-    this.accountSvc.getAll().subscribe({
-      next: (res) => { this.accounts = res; this.loading.set(false); },
+    this.accountSvc.getAll(this.page, this.pageSize).subscribe({
+      next: (res) => {
+        this.accounts = res.items;
+        this.totalCount = res.totalCount;
+        this.page = res.page;
+        this.pageSize = res.pageSize;
+        this.loading.set(false);
+      },
       error: () => this.loading.set(false)
     });
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+  }
+
+  prevPage(): void {
+    if (this.page > 1) {
+      this.page--;
+      this.load();
+    }
+  }
+
+  nextPage(): void {
+    if (this.page < this.totalPages) {
+      this.page++;
+      this.load();
+    }
   }
 
   openCreate(): void {

@@ -40,15 +40,17 @@ public class AccountsControllerTests
             new(Guid.NewGuid(), "Bradesco", "Checking", DateTime.UtcNow)
         };
 
+        var paged = new PagedResult<AccountDto>(accounts, accounts.Count, 1, 50);
+
         _mediatorMock.Setup(m => m.Send(
                 It.IsAny<GetAccountsQuery>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success<IEnumerable<AccountDto>>(accounts));
+            .ReturnsAsync(Result.Success(paged));
 
-        var result = await _controller.GetAll();
+        var result = await _controller.GetAll(1, 50);
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(accounts, ok.Value);
+        Assert.Equal(paged, ok.Value);
     }
 
     [Fact]

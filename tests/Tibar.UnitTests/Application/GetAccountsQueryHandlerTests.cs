@@ -31,7 +31,7 @@ public class GetAccountsQueryHandlerTests
         return mock;
     }
 
-    private class TestAsyncQueryProvider<T> : IQueryProvider
+    private class TestAsyncQueryProvider<T> : IQueryProvider, Microsoft.EntityFrameworkCore.Query.IAsyncQueryProvider
     {
         private readonly IQueryProvider _inner;
         public TestAsyncQueryProvider(IQueryProvider inner) => _inner = inner;
@@ -40,6 +40,18 @@ public class GetAccountsQueryHandlerTests
         public IQueryable<TElement> CreateQuery<TElement>(Expression expression) => new TestAsyncEnumerable<TElement>(expression);
         public object? Execute(Expression expression) => _inner.Execute(expression);
         public TResult Execute<TResult>(Expression expression) => _inner.Execute<TResult>(expression);
+        public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)
+        {
+            var expectedResultType = typeof(TResult).GetGenericArguments()[0];
+            var executionResult = typeof(IQueryProvider)
+                .GetMethod(nameof(IQueryProvider.Execute), 1, new[] { typeof(Expression) })!
+                .MakeGenericMethod(expectedResultType)
+                .Invoke(this, new[] { expression });
+
+            return (TResult)typeof(Task).GetMethod(nameof(Task.FromResult))!
+                .MakeGenericMethod(expectedResultType)
+                .Invoke(null, new[] { executionResult })!;
+        }
     }
 
     private class TestAsyncEnumerable<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
@@ -47,7 +59,7 @@ public class GetAccountsQueryHandlerTests
         private readonly IQueryProvider _provider;
         public TestAsyncEnumerable(Expression expression) : base(expression)
         {
-            _provider = new TestAsyncQueryProvider<T>(this.AsEnumerable().AsQueryable().Provider);
+            _provider = new TestAsyncQueryProvider<T>(this.ToList().AsQueryable().Provider);
         }
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new TestAsyncEnumerator<T>(this.AsEnumerable().GetEnumerator());
@@ -78,10 +90,12 @@ public class GetAccountsQueryHandlerTests
 
         _contextMock.Setup(x => x.Accounts).Returns(CreateMockDbSet(accounts).Object);
 
-        var result = await _handler.Handle(new GetAccountsQuery(userId), CancellationToken.None);
+        var result = await _handler.Handle(new GetAccountsQuery(userId, 1, 50), CancellationToken.None);
 
         Assert.True(result.IsValid);
-        var list = Assert.IsAssignableFrom<IEnumerable<AccountDto>>(result.Data).ToList();
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.TotalCount);
+        var list = result.Data.Items.ToList();
         Assert.Equal(2, list.Count);
         Assert.Contains(list, a => a.Description == "Bradesco");
         Assert.Contains(list, a => a.Description == "Nu");

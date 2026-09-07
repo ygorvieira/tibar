@@ -60,4 +60,9 @@
       }
     </tbody>
   </table>
+  <div class="pagination">
+    <button class="btn-secondary" (click)="prevPage()" [disabled]="page <= 1">Anterior</button>
+    <span>Página {{ page }} de {{ totalPages }} ({{ totalCount }} itens)</span>
+    <button class="btn-secondary" (click)="nextPage()" [disabled]="page >= totalPages">Próxima</button>
+  </div>
 }

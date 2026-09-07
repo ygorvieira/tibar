@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Tibar.Application.Commands.Transactions.Create;
 using Tibar.Application.Commands.Transactions.Delete;
 using Tibar.Application.Commands.Transactions.Update;
+using Tibar.Application.Common;
+using Tibar.Application.DTOs;
 using Tibar.Application.Queries.Transactions;
 
 namespace Tibar.API.Controllers;
@@ -20,6 +22,8 @@ public class TransactionsController(IMediator mediator) : ControllerBase
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<TransactionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetTransactions(
         [FromQuery] DateOnly startDate,
         [FromQuery] DateOnly endDate,

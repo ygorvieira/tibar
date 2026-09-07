@@ -40,15 +40,17 @@ public class CategoriesControllerTests
             new(Guid.NewGuid(), "Food", "Expense", DateTime.UtcNow)
         };
 
+        var paged = new PagedResult<CategoryDto>(categories, categories.Count, 1, 50);
+
         _mediatorMock.Setup(m => m.Send(
                 It.IsAny<GetCategoriesQuery>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success<IEnumerable<CategoryDto>>(categories));
+            .ReturnsAsync(Result.Success(paged));
 
-        var result = await _controller.GetAll();
+        var result = await _controller.GetAll(1, 50);
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        Assert.Equal(categories, ok.Value);
+        Assert.Equal(paged, ok.Value);
     }
 
     [Fact]

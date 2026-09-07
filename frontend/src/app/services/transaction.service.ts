@@ -8,10 +8,12 @@ export class TransactionService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = '/api/transactions';
 
-  getByPeriod(startDate: string, endDate: string, categoryId?: string, type?: string, accountId?: string): Observable<PagedResult<Transaction>> {
+  getByPeriod(startDate: string, endDate: string, categoryId?: string, type?: string, accountId?: string, page = 1, pageSize = 50): Observable<PagedResult<Transaction>> {
     let params = new HttpParams()
       .set('startDate', startDate)
-      .set('endDate', endDate);
+      .set('endDate', endDate)
+      .set('page', page)
+      .set('pageSize', pageSize);
 
     if (categoryId) params = params.set('categoryId', categoryId);
     if (type) params = params.set('type', type);

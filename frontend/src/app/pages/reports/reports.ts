@@ -40,7 +40,7 @@ export class Reports implements OnInit {
   }
 
   private loadAccounts(): void {
-    this.accountSvc.getAll().subscribe(res => this.accounts = res);
+    this.accountSvc.getAll().subscribe(res => this.accounts = res.items);
   }
 
   filter(): void {

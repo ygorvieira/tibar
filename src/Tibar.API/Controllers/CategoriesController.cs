@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Tibar.Application.Commands.Categories.Create;
 using Tibar.Application.Commands.Categories.Delete;
 using Tibar.Application.Commands.Categories.Update;
+using Tibar.Application.Common;
+using Tibar.Application.DTOs;
 using Tibar.Application.Queries.Categories;
 
 namespace Tibar.API.Controllers;
@@ -20,11 +22,15 @@ public class CategoriesController(IMediator mediator) : ControllerBase
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [ProducesResponseType(typeof(PagedResult<CategoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
         var userId = GetUserId();
         var result = await _mediator.Send(
-            new GetCategoriesQuery(userId));
+            new GetCategoriesQuery(userId, page, pageSize));
 
         if (!result.IsValid)
             return BadRequest(new { errors = result.Errors });

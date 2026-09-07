@@ -48,11 +48,11 @@ export class Dashboard implements OnInit {
   }
 
   private loadCategories(): void {
-    this.categorySvc.getAll().subscribe(res => this.categories = res);
+    this.categorySvc.getAll().subscribe(res => this.categories = res.items);
   }
 
   private loadAccounts(): void {
-    this.accountSvc.getAll().subscribe(res => this.accounts = res);
+    this.accountSvc.getAll().subscribe(res => this.accounts = res.items);
   }
 
   filter(): void {

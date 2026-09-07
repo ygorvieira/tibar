@@ -29,6 +29,9 @@ export class Transactions implements OnInit {
   filterCategoryId = '';
   filterAccountId = '';
   filterType = '';
+  page = 1;
+  pageSize = 50;
+  totalCount = 0;
   showForm = false;
   editingId: string | null = null;
   loading = signal(true);
@@ -65,23 +68,50 @@ export class Transactions implements OnInit {
       this.endDate,
       this.filterCategoryId || undefined,
       this.filterType || undefined,
-      this.filterAccountId || undefined
+      this.filterAccountId || undefined,
+      this.page,
+      this.pageSize
     ).subscribe({
-      next: (res) => { this.transactions = res.items; this.loading.set(false); },
+      next: (res) => {
+        this.transactions = res.items;
+        this.totalCount = res.totalCount;
+        this.page = res.page;
+        this.pageSize = res.pageSize;
+        this.loading.set(false);
+      },
       error: () => this.loading.set(false)
     });
   }
 
   private loadCategories(): void {
-    this.categorySvc.getAll().subscribe(res => this.categories = res);
+    this.categorySvc.getAll().subscribe(res => this.categories = res.items);
   }
 
   private loadAccounts(): void {
-    this.accountSvc.getAll().subscribe(res => this.accounts = res);
+    this.accountSvc.getAll().subscribe(res => this.accounts = res.items);
   }
 
   filter(): void {
+    this.page = 1;
     this.loadTransactions();
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+  }
+
+  prevPage(): void {
+    if (this.page > 1) {
+      this.page--;
+      this.loadTransactions();
+    }
+  }
+
+  nextPage(): void {
+    if (this.page < this.totalPages) {
+      this.page++;
+      this.loadTransactions();
+    }
   }
 
   openCreate(): void {
